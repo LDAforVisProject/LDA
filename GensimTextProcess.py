@@ -5,7 +5,6 @@ from gensim import corpora, models, similarities
 from nltk.corpus import stopwords
 import csv, os
 
-# TEST
 
 
 #Todo List:
@@ -16,10 +15,18 @@ import csv, os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-#f = open(os.path.join(__location__, 'bundled-resource.jpg'))
+
 
 #Create Dictionary from text file
-dictionary = corpora.Dictionary(line.lower().split() for line in open(os.path.join(__location__,'KeyVisData.csv')))
+texts = []
+with open(os.path.join(__location__,'KeyVisData.csv'),'rU') as input:
+    cr = csv.reader(input)
+    for line in cr:
+    	output = [word.lower() for word in line]
+        texts.append(output) 
+
+
+dictionary = corpora.Dictionary(texts)
 
 print dictionary
 

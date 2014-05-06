@@ -1,0 +1,3 @@
+visual knowledge discovery, feature selection,guided visualization, regression, model building
+model validation and analysis, program analysis, multi-variate statistics
+cultural heritage, wall paintings, degradation
