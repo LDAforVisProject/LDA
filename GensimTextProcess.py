@@ -5,6 +5,9 @@ from gensim import corpora, models, similarities
 from nltk.corpus import stopwords
 import csv, os
 
+# TEST
+
+
 #Todo List:
 #Chunk terms by comma separation
 #Intialize Dictionary
