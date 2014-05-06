@@ -19,9 +19,9 @@ stop_ids = [dictionary.token2id[stopword] for stopword in stopwords.words('engli
 once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq ==1]
 dictionary.filter_tokens(stop_ids) #remove them from the dictionary "dictionary.filter_tokens(stop_ids + once_ids)"
 dictionary.compactify() # remove gaps in id sequence after words that were removed
-dictionary.save('/Users/charleywu/Github/LDA/tmp/KeyVis.dict') #store dictionary for future reference
+dictionary.save('~/LDA/tmp/KeyVis.dict') #store dictionary for future reference
 
-dictionary = corpora.Dictionary.load('/Users/charleywu/Github/LDA/tmp/KeyVis.dict')
+dictionary = corpora.Dictionary.load('~/tmp/KeyVis.dict')
 print dictionary
 
 
@@ -43,10 +43,10 @@ tfidf = models.TfidfModel(corpus) #tfidf is a read-only object that converts any
 corpus_tfidf = tfidf[corpus]
 
 #Save as market matrix
-corpora.MmCorpus.serialize('/Users/charleywu/Github/LDA/tmp/KeyVis_tfidf.mm', corpus_tfidf)
+corpora.MmCorpus.serialize('~tmp/KeyVis_tfidf.mm', corpus_tfidf)
 
 
-mm = corpora.MmCorpus('/Users/charleywu/Github/LDA/tmp/KeyVis_tfidf.mm')
+mm = corpora.MmCorpus('~/tmp/KeyVis_tfidf.mm')
 print mm
 
 """
