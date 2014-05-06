@@ -49,7 +49,7 @@ class MyCorpus(object):
 	def __iter__(self):
 		for line in open(os.path.join(__location__,'KeyVisData.txt')):
 			#Assume there's one document per line, tokens separated by whitespace
-			yield dictionary.doc2bow(line.lower().split())
+			yield dictionary.doc2bow(line.lower().split(','))
 
 corpus = MyCorpus()
 
