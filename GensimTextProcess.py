@@ -16,7 +16,7 @@ __location__ = os.path.realpath(
 #f = open(os.path.join(__location__, 'bundled-resource.jpg'))
 
 #Create Dictionary from text file
-dictionary = corpora.Dictionary(line.lower().split() for line in open(os.path.join(__location__,'KeyVisData.txt')))
+dictionary = corpora.Dictionary(line.lower().split() for line in open(os.path.join(__location__,'KeyVisData.csv')))
 
 print dictionary
 
