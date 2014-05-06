@@ -20,9 +20,9 @@ print mm
 #Extract topics
 lda = models.ldamodel.LdaModel(corpus = mm, id2word = id2word, num_topics = 16, update_every=1, chunksize = 10, passes = 5)
 
-lda.print_topics(20)
+lda.print_topics(16)
 
-#TODO: make output more readable
+
 
 """
 2014-05-06 17:57:25,243 : INFO : topic #0 (0.062): 0.104*flow visualization + 0.024*feature extraction + 0.016*vortex breakdown + 0.014*filters + 0.014*reaction-diffusion + 0.012*visual debugging + 0.012*tensor field visualization + 0.011*engine simulation + 0.011*computational fluid dynamics (cfd) + 0.011*vortex analysis
