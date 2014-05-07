@@ -5,8 +5,7 @@ from gensim import corpora, models
 import os
 
 #Filepath variable
-__location__ = os.path.realpath(
-    os.path.join(os.getcwd(), os.path.dirname(__file__)))
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 #load id2word Dictionary
