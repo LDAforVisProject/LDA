@@ -5,6 +5,14 @@ from nltk.corpus import stopwords
 import csv, os
 
 
+#Todo list:
+#Convert 2012 file into csv
+#Convert 2013 file into csv
+#check on really short abstracts
+#Investigate UTF8 encoding issue
+#Lemmatize?
+#replace low frequency terms with multi-word terms from keyword list
+
 
 #Filepath variable
 __location__ = os.path.realpath(
@@ -23,16 +31,7 @@ for publication in os.listdir(corporaFolder):
 					abstract = document[2]
 					if abstract != "Abstract":
 						abstractList.append(abstract)
-#Todo:
-#Convert 2012 file into csv
-#Convert 2013 file into csv
-#check on really short abstracts
-#Investigate UTF8 encoding issue
 
-
-
-
-#Todo: Lemmatize?
 #Create token list; unicode encoding and lower case
 abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in document.lower().split()] for document in abstractList]
 
