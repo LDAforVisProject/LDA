@@ -10,17 +10,36 @@ import csv, os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-#Create Dictionary from text file
-texts = []
-with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
-    cr = csv.reader(input)
-    for line in cr:
-    	output = [word.lower() for word in line]
-        texts.append(output) 
+
+#Iterate through files in the KeyVisCorpora folder and append each abstract to abstractList
+abstractList = []
+corporaFolder = os.path.join(__location__, 'KeyVisCorpora')
+for publication in os.listdir(corporaFolder):
+	if publication.endswith('.csv'):
+		with open(os.path.join(corporaFolder,publication), 'rU') as csvfile:
+			cr = csv.reader(csvfile, delimiter=',')
+			for document in cr:
+				if (len(document) >= 3):
+					abstract = document[2]
+					if abstract != "Abstract":
+						abstractList.append(abstract)
+#Todo:
+#Convert 2012 file into csv
+#Convert 2013 file into csv
+#check on really short abstracts
+#Investigate UTF8 encoding issue
 
 
-dictionary = corpora.Dictionary(texts)
 
+
+#Todo: Lemmatize?
+#Create token list; unicode encoding and lower case
+abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in document.lower().split()] for document in abstractList]
+
+
+
+#Build dictionary
+dictionary = corpora.Dictionary(abstractTokens)
 
 
 #remove stop words and words that appear only once
