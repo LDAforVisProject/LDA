@@ -79,7 +79,15 @@ def visualizeTopics(lda, k, top):
 			print word
 
 		print ""
-
+		
+#CSV writer example
+"""
+#CSV writer
+with open('Sample.csv', 'wb') as output:
+    w = csv.writer(output) #name and location of output file
+    for q in SampleList:  #writes a new row for each item in SampleList
+        w.writerow(q)
+"""
 visualizeTopics(lda, k, 10)
 
 
