@@ -11,7 +11,7 @@ import pattern #for gensim to lemmatize text, it requires this module
 #Convert 2012 file into csv
 #Convert 2013 file into csv
 #check on really short abstracts
-#replace low frequency terms with multi-word terms from keyword list
+#replace low frequency terms with multi_word_terms from keyword list
 """
 
 
@@ -22,18 +22,14 @@ k = 10
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
-#Iterate through files in the KeyVisCorpora folder and append each abstract to abstractList
+#Abstract list populated by corporaReader.py, which iterate through files in the KeyVisCorpora folder and writes them to a single file called 'abstracts.txt'
 abstractList = []
-corporaFolder = os.path.join(__location__, 'KeyVisCorpora')
-for publication in os.listdir(corporaFolder):
-	if publication.endswith('.csv'):
-		with open(os.path.join(corporaFolder,publication), 'rU') as csvfile:
-			cr = csv.reader(csvfile, delimiter=',')
-			for document in cr:
-				if (len(document) >= 3):
-					abstract = document[2]
-					if abstract != "Abstract":
-						abstractList.append(abstract)
+with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'r') as inputFile:
+	document = inputFile.readlines()
+	for abstract in document:
+		abstractList.append(abstract)
+print len(abstractList)
+
 
 #Create token list; unicode encoding and lower case
 abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in document.lower().split()] for document in abstractList]
@@ -90,7 +86,7 @@ print mm
 # lsi = models.lsimodel.LsiModel(corpus=mm, id2word=dictionary, num_topics=k)
 # lsi.print_topics(k)
 
-lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k)
+lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,  update_every=10, chunksize = 10, passes = 5)
 # lda.print_topics(k)
 
 # We print the topics
