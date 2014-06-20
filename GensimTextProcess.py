@@ -2,7 +2,7 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from gensim import corpora, models
 from nltk.corpus import stopwords
-import csv, os, re
+import csv, os, re, codecs
 
 
 #SET PARAMETERS
@@ -15,7 +15,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 #Reads from "/KeyVisCorpora/abstracts.txt"
 #Abstract list populated by corporaReader.py, which iterate through files in the KeyVisCorpora folder and writes them to a single file called 'abstracts.txt'
 abstractList = []
-with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'r') as inputFile:
+with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'rU') as inputFile:
 	document = inputFile.readlines()
 	for abstract in document:
 		abstractList.append(abstract)
@@ -44,7 +44,8 @@ dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dic
 #Memory efficient method to read from text without storing in RAM
 class MyCorpus(object):
 	def __iter__(self):
-		for line in abstractList:
+		for line in open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'rU'):
+			line = unicode(line, errors='ignore')
 			#Assume there's one document per line, tokens separated by comma
 			yield dictionary.doc2bow(line.lower().split())
 
@@ -66,7 +67,8 @@ print mm
 # lsi = models.lsimodel.LsiModel(corpus=mm, id2word=dictionary, num_topics=k)
 # lsi.print_topics(k)
 
-lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,  update_every=10, chunksize = 10, passes = 5)
+lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k)
+#lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,  update_every=10, chunksize = 10, passes = 5)
 # lda.print_topics(k)
 
 # We print the topics
