@@ -2,17 +2,7 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from gensim import corpora, models
 from nltk.corpus import stopwords
-import csv, os
-import pattern #for gensim to lemmatize text, it requires this module
-
-
-"""
-#Todo list:
-#Convert 2012 file into csv
-#Convert 2013 file into csv
-#check on really short abstracts
-#replace low frequency terms with multi_word_terms from keyword list
-"""
+import csv, os, re
 
 
 #SET PARAMETERS
@@ -30,29 +20,12 @@ with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'r') as 
 	for abstract in document:
 		abstractList.append(abstract)
 
-#Keywords dict (for swapping with low-freq single word terms)
-#key value is the string length of the keyword, so we can sort by longest term
-keywordDict = {}
-with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
-    cr = csv.reader(input)
-    for line in cr:
-    	keywords = [x.lower() for x in line]
-        for term in keywords:
-        	termLength = len(term)
-        	keywordDict[term] = termLength
-
-#Join any multi-word keywords that are also in the abstractList with 
-sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
-print sortedList
 
 #Create token list from abstractList; unicode encoding and lower case
-abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in document.lower().split()] for document in abstractList]
+abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in line.lower().split()] for line in abstractList]
 
 #Build dictionary
 dictionary = corpora.Dictionary(abstractTokens)
-
-
-
 
 
 #remove stop words and words that appear only once
@@ -71,9 +44,9 @@ dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dic
 #Memory efficient method to read from text without storing in RAM
 class MyCorpus(object):
 	def __iter__(self):
-		for line in open(os.path.join(__location__,'data/KeyVisData.txt')):
+		for line in abstractList:
 			#Assume there's one document per line, tokens separated by comma
-			yield dictionary.doc2bow(line.lower().split(','))
+			yield dictionary.doc2bow(line.lower().split())
 
 corpus = MyCorpus()
 

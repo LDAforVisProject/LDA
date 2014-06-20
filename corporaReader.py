@@ -1,10 +1,7 @@
 #Keyvis Copora Reader
 #reads through the KeyVisCopora folder and creates a single text file with one abstract per line
-"""Todo:
-#ensure comma separation in source files
-#deal with non-ascii encoding
-"""
-import os, csv
+
+import os, csv, re
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -21,7 +18,31 @@ for publication in os.listdir(corporaFolder):
 					if abstract != "Abstract":
 						abstractList.append(abstract)
 
+#Keywords dict (for swapping with low-freq single word terms)
+#key value is the string length of the keyword, so we can sort by longest term
+keywordDict = {}
+with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
+    cr = csv.reader(input)
+    for line in cr:
+    	keywords = [x.lower() for x in line]
+        for term in keywords:
+        	termLength = len(term)
+        	keywordDict[term] = termLength
+
+#Join any multi-word keywords that are also in the abstractList with 
+sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
+
+#find and replace
+newAbstractList = []
+for abstract in abstractList:
+	for keyword in sortedList:
+		tokenlist = keyword.split()
+		joinedKeyword = "_".join(tokenlist)
+		abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+	newAbstractList.append(abstract)
+
+#Writes to file		
 with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'w') as file:
-	for abstract in abstractList:
+	for abstract in newAbstractList:
 		output = abstract + '\n'
 		file.write(output)
