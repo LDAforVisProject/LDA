@@ -2,7 +2,8 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from gensim import corpora, models
 from nltk.corpus import stopwords
-import csv, os, re, codecs
+import csv, os, re, codecs, string
+from pattern.vector import stem, LEMMA
 
 
 #SET PARAMETERS
@@ -23,13 +24,16 @@ with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'rU') as
 
 #Create token list from abstractList; unicode encoding and lower case
 abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in line.lower().split()] for line in abstractList]
-
+abstractTokens = [[stem(word, stemmer=LEMMA) for word in line] for line in abstractTokens]
 #Build dictionary
 dictionary = corpora.Dictionary(abstractTokens)
 
 
 #remove stop words and words that appear only once
-stop_ids = [dictionary.token2id[stopword] for stopword in stopwords.words('english') if stopword in dictionary.token2id]
+stopwords = stopwords.words('english')
+exclusionlist = ['-', 'se' ]
+stopwords = stopwords + exclusionlist
+stop_ids = [dictionary.token2id[stopword] for stopword in stopwords if stopword in dictionary.token2id]
 once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq ==1]
 dictionary.filter_tokens(stop_ids) #remove them from the dictionary "dictionary.filter_tokens(stop_ids + once_ids)"
 dictionary.compactify() # remove gaps in id sequence after words that were removed
@@ -41,18 +45,23 @@ dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dic
 
 #Initialize Corpus
 
+
+
 #Memory efficient method to read from text without storing in RAM
 class MyCorpus(object):
 	def __iter__(self):
 		for line in open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'rU'):
 			line = unicode(line, errors='ignore')
-			#Assume there's one document per line, tokens separated by comma
-			yield dictionary.doc2bow(line.lower().split())
+			lowers = line.lower()
+			tokenList = lowers.split()
+			output = [stem(word, stemmer=LEMMA) for word in tokenList]
+			#Assume there's one document per line, tokens separated by space
+			yield dictionary.doc2bow([x.strip() for x in output])
 
 corpus = MyCorpus()
 
 #tf/idf transformation
-#TODO explore other possible transformations
+
 tfidf = models.TfidfModel(corpus) #tfidf is a read-only object that converts any vector from the old representation to the new representation
 corpus_tfidf = tfidf[corpus]
 
@@ -67,8 +76,10 @@ print mm
 # lsi = models.lsimodel.LsiModel(corpus=mm, id2word=dictionary, num_topics=k)
 # lsi.print_topics(k)
 
+
 lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k)
 #lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,  update_every=10, chunksize = 10, passes = 5)
+
 # lda.print_topics(k)
 
 # We print the topics
