@@ -12,7 +12,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 abstractList = []
 corporaFolder = os.path.join(__location__, 'KeyVisCorpora')
 for publication in os.listdir(corporaFolder):
-	if publication.endswith('.csv'):
+	if publication.endswith('.csv'): #ONLY READS CSV
 		with open(os.path.join(corporaFolder,publication), 'rU') as csvfile:
 			cr = csv.reader(csvfile, delimiter=',')
 			for document in cr:

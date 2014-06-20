@@ -15,37 +15,44 @@ import pattern #for gensim to lemmatize text, it requires this module
 """
 
 
+#SET PARAMETERS
 #number of topics
 k = 10
-
 #Filepath variable
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
+#Reads from "/KeyVisCorpora/abstracts.txt"
 #Abstract list populated by corporaReader.py, which iterate through files in the KeyVisCorpora folder and writes them to a single file called 'abstracts.txt'
 abstractList = []
 with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'r') as inputFile:
 	document = inputFile.readlines()
 	for abstract in document:
 		abstractList.append(abstract)
-print len(abstractList)
 
+#Keywords dict (for swapping with low-freq single word terms)
+#key value is the string length of the keyword, so we can sort by longest term
+keywordDict = {}
+with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
+    cr = csv.reader(input)
+    for line in cr:
+    	keywords = [x.lower() for x in line]
+        for term in keywords:
+        	termLength = len(term)
+        	keywordDict[term] = termLength
 
-#Create token list; unicode encoding and lower case
+#Join any multi-word keywords that are also in the abstractList with 
+sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
+print sortedList
+
+#Create token list from abstractList; unicode encoding and lower case
 abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in document.lower().split()] for document in abstractList]
 
 #Build dictionary
 dictionary = corpora.Dictionary(abstractTokens)
 
 
-#Keywords list (for swapping with low-freq single word terms)
-#still unused
-keywords = []
-with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
-    cr = csv.reader(input)
-    for line in cr:
-    	output = [word.lower() for word in line]
-        keywords.append(output) 
+
 
 
 #remove stop words and words that appear only once
