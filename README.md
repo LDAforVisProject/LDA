@@ -13,7 +13,10 @@ Requitements:
 *pattern
 
 *To Do List
--Plug in new data from the google drive folder (https://drive.google.com/folderview?id=0B2uGsrlucvWQSmJuNmVLNFdaWmc&usp=sharing)
+-Remove punctuation
+-Clean up any abnormalities in the newly added csv files in KeyVisCorpora folder
+-iterate through possible number of topics (k) and choose the best value based on the likelihoods from EM estimation
+-iterate through possible parameter settings of LDA to find optimal settings
 
 
 Final Report Guidelines (http://vda.cs.univie.ac.at/Teaching/Vis/14s/project.html)
