@@ -20,7 +20,7 @@ mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
 print mm
 
 #Extract topics
-lda = models.ldamodel.LdaModel(corpus = mm, id2word = id2word, num_topics = 16, update_every=1, chunksize = 10, passes = 5)
+lda = models.ldamodel.LdaModel(corpus = mm, id2word = id2word, num_topics = k, update_every=1, chunksize = 10, passes = 5)
 
 # Method to print topics in a more reader-friendly method
 def visualizeTopics(lda, k, top):
