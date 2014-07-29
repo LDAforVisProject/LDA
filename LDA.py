@@ -1,26 +1,41 @@
-#Runs LDA after LDATextProcess.py has done text pre-processing and written KeyVis.dict and KeyVis_tfidf.mm
-#Allows for quicker experimentation with LDA parameters
+''' LDA
+
+@file: 		LDA.py
+@author: 	Charley Wu, Matthias Hofer
+
+Main topic modeling file:
+Runs 'LDA' after textProcessor.py has done the text 
+pre-processing and written KeyVis.dict and KeyVis_tfidf.mm
+
+Also, provide a method for writing and visualizing topics
+
+Allows for quicker experimentation with LDA parameters
+'''
+
 import logging 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 from gensim import corpora, models
 import os, csv
 
-k = 10
-#Filepath variable
+"""Model parameters"""
+k = 10	#number of topics
+
+#filepath variable
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-
 #load id2word Dictionary
-id2word = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
+dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
 
 #load Corpus iterator
 mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
 
 print mm
 
-#Extract topics
-lda = models.ldamodel.LdaModel(corpus = mm, id2word = id2word, num_topics = k, update_every=1, chunksize = 10, passes = 5)
+
+#TRAIN LDA MODEL
+lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k, 
+	update_every=1, chunksize=10000, passes=5)
 
 # Method to print topics in a more reader-friendly method
 def visualizeTopics(lda, k, top):
@@ -51,4 +66,5 @@ def writeTopics(outputfile, lda, k, topn=10):
 visualizeTopics(lda, k, 10)
 #Save topics to csv
 writeTopics(os.path.join(__location__, 'data/LDATopics.csv'), lda, k)
+
 

@@ -8,22 +8,22 @@ See [wiki](https://github.com/LDAforVisProject/LDA/wiki) for more information
 
 
 Requitements:
-*gensim
-*nltk
-*pattern
+*gensim (http://radimrehurek.com/gensim/install.html)
+*nltk (http://www.nltk.org/install.html)
+*pattern (http://www.clips.ua.ac.be/pattern)
 
 *To Do List
--Remove punctuation
--Clean up any abnormalities in the newly added csv files in KeyVisCorpora folder
--iterate through possible number of topics (k) and choose the best value based on the likelihoods from EM estimation
--iterate through possible parameter settings of LDA to find optimal settings
+- Write a method to compute the model's total probability
+- Iterate through possible number of topics (K) and choose 
+	the best value based on the likelihoods from EM estimation
+- Iterate through possible parameter settings of LDA to find 
+	optimal settings
+- Check out nltk book (http://www.nltk.org/book/) methods
 
 
 Final Report Guidelines (http://vda.cs.univie.ac.at/Teaching/Vis/14s/project.html)
 M4: Final Report
 
-Due date: Jun 22, Sunday before the presentations 
-Report format: PDF document
 The final report should be a stand-alone document describing your complete project. You should assume the reader has no prior knowledge of your project and has not read your proposal. Include the following information in your report:
 
 Motivation
