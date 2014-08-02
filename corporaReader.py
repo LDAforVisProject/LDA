@@ -10,13 +10,14 @@ the article keywords provided in the same corpus
 terms are are joined using underscores.
 
 Keywords are appended to the abstract, since some 
-abstracts might not even use the keywords they are 
+abstracts might not even use the keywords thnoteey are 
 tagged with.
 
 Writes abstract to abstracts.txt
 '''
 
 import os, csv, re
+import time
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
@@ -24,6 +25,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 """In addition, append keywords to the abstracts"""
 print "Reading abstracts ..."
 abstractList = []
+keywordList = []
 corporaFolder = os.path.join(__location__, 'KeyVisCorpora')
 for publication in os.listdir(corporaFolder):
 	if publication.endswith('.csv'): #only read csv-files!
@@ -36,12 +38,14 @@ for publication in os.listdir(corporaFolder):
 					if (keywords != "Author Keywords" and len(keywords) > 0): 
 						keywords = keywords.lower() #convert to lowercase
 						keywords = re.sub('[;]', ' ', keywords)
-						abstract = abstract + keywords
+						keywords = re.sub('[:|.|[|]|]', '', keywords)
+						keywords = re.sub('[0-9]+', '', keywords) #remove integers
+						#keywords = re.sub('[a-z]', '', keywords) #remove single chars
 					if (abstract != "Abstract" and len(abstract) > 0): 
 						abstract = abstract.lower() #convert to lowercase
-						abstract = re.sub('[;,.]', '', abstract)
+						abstract = re.sub('[;|,|:|.|?|!|(|)|]', '', abstract)
+						abstract = abstract + ' ' + keywords
 						abstractList.append(abstract)
-					
 
 print "Finished reading  %i abstracts!" % len(abstractList)
 
@@ -55,26 +59,27 @@ with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
     for line in cr:
     	keywords = [x.lower() for x in line]
         for term in keywords:
+        	term.strip()
         	termLength = len(term)
         	keywordDict[term] = termLength
-
 print "Finished building keyword dictionary with %i terms!" % len(keywordDict.keys())
 
 
 """(3) Join any multi-word keywords that are also in the abstractList"""
 sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
 print "Joining multi-word terms (this takes a few minutes) ..."
+start = time.time()
 #TODO: find a faster method to do this
 newAbstractList = []
 for abstract in abstractList:
 	for keyword in sortedList:
 		tokenlist = keyword.split()
-		joinedKeyword = "_".join(tokenlist)
-		abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+		joinedKeyword = '_'.join(tokenlist)
+		if (keyword != joinedKeyword):
+ 			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+ 			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
 	newAbstractList.append(abstract)
-
-print "Finished joining multi_word_terms!"
-
+print "Finished joining multi-word terms after", time.time() - start, "seconds!"
 
 """(4) Write to file"""		
 print "Writing to file ..."
@@ -83,4 +88,3 @@ with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'w') as 
 		output = abstract + '\n'
 		file.write(output)
 print "Pre-processing done!"
-

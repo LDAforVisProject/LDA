@@ -1,7 +1,6 @@
 LDA
 ===
 
-
 LDA project for KeyVis corpus by Charley Wu and Matthias Hofer
 
 See [wiki](https://github.com/LDAforVisProject/LDA/wiki) for more information
@@ -16,8 +15,6 @@ Requitements:
 - Write a method to compute the model's total probability
 - Iterate through possible number of topics (K) and choose 
 	the best value based on the likelihoods from EM estimation
-- Iterate through possible parameter settings of LDA to find 
-	optimal settings
 - Check out nltk book (http://www.nltk.org/book/) methods
 
 

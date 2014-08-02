@@ -19,7 +19,7 @@ from gensim import corpora, models
 import os, csv
 
 """Model parameters"""
-k = 10	#number of topics
+k = 20	#number of topics
 
 #filepath variable
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -32,39 +32,46 @@ mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
 
 print mm
 
-
 #TRAIN LDA MODEL
 lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k, 
-	update_every=1, chunksize=10000, passes=5)
+	update_every=5, chunksize=100, passes=10)
 
-# Method to print topics in a more reader-friendly method
-def visualizeTopics(lda, k, top):
+#Method to print the k-most-likely terms for all found topics in a 
+#more reader-friendly method
+def visualizeTopics(lda, k, topn):
 	i = 0
-	for topic in lda.show_topics(topics=k, formatted=False, topn=top):
+	topicList = ''
+	for topic in lda.show_topics(topics=k, formatted=False, topn=topn):
 		i = i + 1
-		print "Topic #" + str(i) + ":\n",
-		print "++++++++++++++"
+		print "Topic #" + str(i) + ": ",
 		for p, word in topic:
-			print word
-
-		print ""
+			topicList = topicList + word + ', '
+		print topicList[:-2]
+		topicList = ''
 		
 #Write topics to CSV
-def writeTopics(outputfile, lda, k, topn=10):
+def writeTopics(outputfile, lda, k, topn):
 	with open(outputfile, 'wb') as output:
 		topicList = []
+		i = 0
 		for topic in lda.show_topics(topics=k, formatted=False, topn=topn):
 			subTopicList = []
+			i = i + 1
+			subTopicList.append("Topic " + str(i))
 			for p, word in topic:
 				subTopicList.append(word)
 			topicList.append(subTopicList)
+		topicListTransposed = [list(j) for j in zip(*topicList)] #transpose 2-d topic array
 		w = csv.writer(output)
-		for q in topicList:
+		for q in topicListTransposed:
 			w.writerow(q)
 
-#generate topics
-visualizeTopics(lda, k, 10)
+print ""
+outputfile = os.path.join(__location__, 'data/LDATopics.csv')
+nOfTerms = 10
+
+#Visualize Topics
+visualizeTopics(lda, k, nOfTerms)
+
 #Save topics to csv
-writeTopics(os.path.join(__location__, 'data/LDATopics.csv'), lda, k)
-
-
+writeTopics(outputfile, lda, k, nOfTerms)
