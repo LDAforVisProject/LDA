@@ -61,7 +61,8 @@ def writeTopics(outputfile, lda, k, topn):
 			for p, word in topic:
 				subTopicList.append(word)
 			topicList.append(subTopicList)
-		topicListTransposed = [list(j) for j in zip(*topicList)] #transpose 2-d topic array
+		#transpose 2-d topic array; topics are now represented column-wise
+		topicListTransposed = [list(j) for j in zip(*topicList)] 
 		w = csv.writer(output)
 		for q in topicListTransposed:
 			w.writerow(q)

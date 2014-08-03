@@ -33,18 +33,20 @@ for publication in os.listdir(corporaFolder):
 			cr = csv.reader(csvfile, delimiter='\t') #use tabstops delimiters!
 			for document in cr:
 				if (len(document) >= 13):
-					keywords = document[12] # keywords are 
-					abstract = document[13]
+					keywords = document[12] # keywords are in the csv-files' column 13
+					abstract = document[13] # abstracts are in the csv-files' column 14
 					if (keywords != "Author Keywords" and len(keywords) > 0): 
 						keywords = keywords.lower() #convert to lowercase
+						#Using RegEx to clean up the data
 						keywords = re.sub('[;]', ' ', keywords)
 						keywords = re.sub('[:|.|[|]|]', '', keywords)
 						keywords = re.sub('[0-9]+', '', keywords) #remove integers
 						#keywords = re.sub('[a-z]', '', keywords) #remove single chars
 					if (abstract != "Abstract" and len(abstract) > 0): 
 						abstract = abstract.lower() #convert to lowercase
+						#Using RegEx to clean up the data
 						abstract = re.sub('[;|,|:|.|?|!|(|)|]', '', abstract)
-						abstract = abstract + ' ' + keywords
+						abstract = abstract + ' ' + keywords #concatenate abstracts and keywords
 						abstractList.append(abstract)
 
 print "Finished reading  %i abstracts!" % len(abstractList)
@@ -61,7 +63,7 @@ with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
         for term in keywords:
         	term.strip()
         	termLength = len(term)
-        	keywordDict[term] = termLength
+        	keywordDict[term] = termLength #store term it's length in a dictionary 
 print "Finished building keyword dictionary with %i terms!" % len(keywordDict.keys())
 
 
@@ -70,6 +72,7 @@ sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
 print "Joining multi-word terms (this takes a few minutes) ..."
 start = time.time()
 #TODO: find a faster method to do this
+#start replacment process with longest multi-word terms 
 newAbstractList = []
 for abstract in abstractList:
 	for keyword in sortedList:
@@ -77,6 +80,8 @@ for abstract in abstractList:
 		joinedKeyword = '_'.join(tokenlist)
 		if (keyword != joinedKeyword):
  			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+ 			# the following line is a workaround needed to fix issues with missing ' ' separation after 
+ 			# keyword replacement
  			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
 	newAbstractList.append(abstract)
 print "Finished joining multi-word terms after", time.time() - start, "seconds!"
