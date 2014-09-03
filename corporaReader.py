@@ -71,7 +71,16 @@ print "Finished building keyword dictionary with %i terms!" % len(keywordDict.ke
 sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
 print "Joining multi-word terms (this takes a few minutes) ..."
 start = time.time()
+
 #TODO: find a faster method to do this
+# Prepare finished joined keyword list. Should be faster than
+# joining all keywords for each abstract (remains to be seen).
+
+joinedKeywordList = {}
+for keyword in sortedList:
+		tokenlist = keyword.split()
+		joinedKeyword = '_'.join(tokenlist)
+		
 #start replacment process with longest multi-word terms 
 newAbstractList = []
 for abstract in abstractList:

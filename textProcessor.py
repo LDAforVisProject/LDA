@@ -45,7 +45,6 @@ print "Creating token list ..."
 abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in line.split()] for line in abstractList]
 abstractTokens = [[stem(word, stemmer=LEMMA) for word in line] for line in abstractTokens]
 
-
 """Build dictionary and do dictionary pre-processing"""
 print "Building dicitonary ..."
 dictionary = corpora.Dictionary(abstractTokens)

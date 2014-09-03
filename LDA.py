@@ -13,6 +13,8 @@ Allows for quicker experimentation with LDA parameters
 '''
 
 import logging 
+#import chardet
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 from gensim import corpora, models
@@ -21,11 +23,21 @@ import os, csv
 """Model parameters"""
 k = 20	#number of topics
 
+""" Output settings """
+nOfTerms = 10
+
+
 #filepath variable
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 #load id2word Dictionary
 dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
+#nOfTerms = len(dictionary)
+
+#print dictionary
+#print len(dictionary)
+#input("stop")
+
 
 #load Corpus iterator
 mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
@@ -38,38 +50,55 @@ lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,
 
 #Method to print the k-most-likely terms for all found topics in a 
 #more reader-friendly method
-def visualizeTopics(lda, k, topn):
+def visualizeTopics(lda, k, numberOfTerms):
 	i = 0
 	topicList = ''
-	for topic in lda.show_topics(topics=k, formatted=False, topn=topn):
+	for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
+		pSummed = 0
 		i = i + 1
 		print "Topic #" + str(i) + ": ",
 		for p, word in topic:
-			topicList = topicList + word + ', '
-		print topicList[:-2]
+			pSummed += p
+			topicList = topicList + word + '|' + str(p) + ', '
+		#print topicList[:-2]
+		print "pSummed #" + str(i) + ": " + str(pSummed)
 		topicList = ''
 		
 #Write topics to CSV
-def writeTopics(outputfile, lda, k, topn):
+def writeTopics(outputfile, lda, k, numberOfTerms):
 	with open(outputfile, 'wb') as output:
 		topicList = []
 		i = 0
-		for topic in lda.show_topics(topics=k, formatted=False, topn=topn):
+		for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
 			subTopicList = []
 			i = i + 1
 			subTopicList.append("Topic " + str(i))
 			for p, word in topic:
-				subTopicList.append(word)
+				subTopicList.append(word + '|' + str(p))
 			topicList.append(subTopicList)
+		
 		#transpose 2-d topic array; topics are now represented column-wise
 		topicListTransposed = [list(j) for j in zip(*topicList)] 
 		w = csv.writer(output)
 		for q in topicListTransposed:
-			w.writerow(q)
+			try:
+				w.writerow(q)
+			except UnicodeEncodeError as e:
+				"""
+				# TODO: Install chardet, try to convert broken keyword strings into ASCII (or other working encoding).
+				#		At least find working method to detect broken keyword strings.
+				
+				qAlternative = []
+				i = 0
+				for keyword in q:
+					qAlternative[i] = keyword.decode(encoding['encoding']).encode('ascii')
+					i++
+				"""
+				
+				print "Not ACII-encoded", 
 
 print ""
 outputfile = os.path.join(__location__, 'data/LDATopics.csv')
-nOfTerms = 10
 
 #Visualize Topics
 visualizeTopics(lda, k, nOfTerms)
