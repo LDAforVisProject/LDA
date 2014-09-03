@@ -34,10 +34,6 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
 #nOfTerms = len(dictionary)
 
-#print dictionary
-#print len(dictionary)
-#input("stop")
-
 
 #load Corpus iterator
 mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
@@ -95,7 +91,7 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 					i++
 				"""
 				
-				print "Not ACII-encoded", 
+				print "Not ACII-encoded"
 
 print ""
 outputfile = os.path.join(__location__, 'data/LDATopics.csv')
