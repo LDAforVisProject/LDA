@@ -6,7 +6,7 @@ LDA project for KeyVis corpus by Charley Wu and Matthias Hofer
 See [wiki](https://github.com/LDAforVisProject/LDA/wiki) for more information
 
 
-Requitements:
+Requirements:
 *gensim (http://radimrehurek.com/gensim/install.html)
 *nltk (http://www.nltk.org/install.html)
 *pattern (http://www.clips.ua.ac.be/pattern)

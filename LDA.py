@@ -49,16 +49,29 @@ lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k,
 def visualizeTopics(lda, k, numberOfTerms):
 	i = 0
 	topicList = ''
+	topicList_withProbabilities = ''
+	topicListCollection_withProbabilities = []
+	
 	for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
-		pSummed = 0
 		i = i + 1
 		print "Topic #" + str(i) + ": ",
+		
 		for p, word in topic:
-			pSummed += p
-			topicList = topicList + word + '|' + str(p) + ', '
-		#print topicList[:-2]
-		print "pSummed #" + str(i) + ": " + str(pSummed)
+			topicList = topicList + word + ', '
+			# TODO: Append to list
+			topicList_withProbabilities = topicList_withProbabilities + word + '|' + str(p) + ', '
+		
+		print topicList[:-2]
+		topicListCollection_withProbabilities.append(topicList_withProbabilities)
+		
 		topicList = ''
+		topicList_withProbabilities = ''
+	
+	i = 0
+	for topicList_withProbabilities in topicListCollection_withProbabilities:
+		i = i + 1
+		print "Topic #" + str(i) + ": ",
+		print topicList_withProbabilities[:-2]
 		
 #Write topics to CSV
 def writeTopics(outputfile, lda, k, numberOfTerms):
