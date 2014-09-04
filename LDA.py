@@ -17,10 +17,14 @@ import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+
 from gensim import corpora, models
 import os, csv
 
-"""Model parameters"""
+""" Model parameters """
+''' 
+@todo: Model parameters to be delivered as arguments, not to be specificed as constants. 
+''' 
 k = 20	#number of topics
 
 """ Output settings """
@@ -32,7 +36,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 #load id2word Dictionary
 dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
-#nOfTerms = len(dictionary)
+nOfTerms = len(dictionary)
 
 
 #load Corpus iterator
@@ -58,20 +62,29 @@ def visualizeTopics(lda, k, numberOfTerms):
 		
 		for p, word in topic:
 			topicList = topicList + word + ', '
-			# TODO: Append to list
 			topicList_withProbabilities = topicList_withProbabilities + word + '|' + str(p) + ', '
 		
-		print topicList[:-2]
+		''' 
+		@todo: Fix encoding issues (consider workflow). See issue #5 and https://stackoverflow.com/questions/491921/unicode-utf8-reading-and-writing-to-files-in-python,
+				particularly the second-best-rated answer (codes.open()).
+		''' 
+		try:
+			print topicList[:-2]
+		except UnicodeEncodeError as e:
+			print "This topic seems not to be ASCII-encoded. See issue #5."
+			
 		topicListCollection_withProbabilities.append(topicList_withProbabilities)
 		
 		topicList = ''
 		topicList_withProbabilities = ''
-	
+
+	"""	
 	i = 0
 	for topicList_withProbabilities in topicListCollection_withProbabilities:
 		i = i + 1
 		print "Topic #" + str(i) + ": ",
 		print topicList_withProbabilities[:-2]
+	"""		
 		
 #Write topics to CSV
 def writeTopics(outputfile, lda, k, numberOfTerms):
@@ -94,8 +107,8 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 				w.writerow(q)
 			except UnicodeEncodeError as e:
 				"""
-				# TODO: Install chardet, try to convert broken keyword strings into ASCII (or other working encoding).
-				#		At least find working method to detect broken keyword strings.
+				@todo: Install chardet, try to convert broken keyword strings into ASCII (or other working encoding).
+						At least find working method to detect broken keyword strings.
 				
 				qAlternative = []
 				i = 0
@@ -104,7 +117,7 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 					i++
 				"""
 				
-				print "Not ACII-encoded"
+				print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5."
 
 print ""
 outputfile = os.path.join(__location__, 'data/LDATopics.csv')

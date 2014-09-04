@@ -43,3 +43,9 @@ Strengths and weaknesses of your approach and implementation
 Lessons you learned
 References
 Your report should include screen shots of your software that demonstrate how it functions. There is no specific page limit so take as much room as you need for images. Some of the above sections will be much longer than others. (I would strongly advocate to write your report using the latex templates used for the Vis conference.)
+
+Addendum
+===
+
+Continued by Raphael Mitsch in the context of a visual parameter space analysis of visualization keyword clusters (PCT course, University of Vienna, Master in Scientific Computing; supervised by Torsten Möller).
+Details to follow.
