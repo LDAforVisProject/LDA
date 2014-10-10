@@ -13,7 +13,8 @@ Allows for quicker experimentation with LDA parameters
 '''
 
 import logging 
-#import chardet
+import codecs
+import unicodecsv
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -22,31 +23,28 @@ from gensim import corpora, models
 import os, csv
 
 """ Model parameters """
-''' 
-@todo: Model parameters to be delivered as arguments, not to be specificed as constants. 
-''' 
-k = 20	#number of topics
-
-""" Output settings """
-nOfTerms = 10
-
 
 #filepath variable
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 #load id2word Dictionary
 dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
-nOfTerms = len(dictionary)
-
 
 #load Corpus iterator
 mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
 
 print mm
 
+
+''' 
+@todo: Model parameters to be delivered as arguments, not to be specificed as constants. 
+''' 
+k = 20	#number of topics
+nOfTerms = len(dictionary)
+
 #TRAIN LDA MODEL
 lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k, 
-	update_every=5, chunksize=100, passes=10)
+	update_every=5, chunksize=100, passes=5)
 
 #Method to print the k-most-likely terms for all found topics in a 
 #more reader-friendly method
@@ -68,11 +66,8 @@ def visualizeTopics(lda, k, numberOfTerms):
 		@todo: Fix encoding issues (consider workflow). See issue #5 and https://stackoverflow.com/questions/491921/unicode-utf8-reading-and-writing-to-files-in-python,
 				particularly the second-best-rated answer (codes.open()).
 		''' 
-		try:
-			print topicList[:-2]
-		except UnicodeEncodeError as e:
-			print "This topic seems not to be ASCII-encoded. See issue #5."
-			
+		print topicList[:-2]
+		
 		topicListCollection_withProbabilities.append(topicList_withProbabilities)
 		
 		topicList = ''
@@ -98,13 +93,23 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 			for p, word in topic:
 				subTopicList.append(word + '|' + str(p))
 			topicList.append(subTopicList)
+			#print "Topic #" + str(i)
+			#print subTopicList
 		
 		#transpose 2-d topic array; topics are now represented column-wise
 		topicListTransposed = [list(j) for j in zip(*topicList)] 
-		w = csv.writer(output)
+		wunicode = unicodecsv.writer(output, encoding='utf-8')
+		errorIndex = 0
+		
+		#unicodeCSVWriter = UnicodeWriter(output)
+		#unicodeCSVWriter.writerows(topicListTransposed)
+		
 		for q in topicListTransposed:
 			try:
-				w.writerow(q)
+				#w.writerow(qAlternative)
+				#csv_writer.writerow(q)
+				wunicode.writerow(q)
+				
 			except UnicodeEncodeError as e:
 				"""
 				@todo: Install chardet, try to convert broken keyword strings into ASCII (or other working encoding).
@@ -116,9 +121,10 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 					qAlternative[i] = keyword.decode(encoding['encoding']).encode('ascii')
 					i++
 				"""
-				
-				print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5."
-
+				errorIndex = errorIndex + 1
+				print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
+				print e
+	
 print ""
 outputfile = os.path.join(__location__, 'data/LDATopics.csv')
 

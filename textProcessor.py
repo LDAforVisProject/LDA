@@ -22,6 +22,7 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 import csv, os
+import codecs
 from gensim import corpora, models
 from nltk.corpus import stopwords
 from pattern.vector import stem, LEMMA
@@ -42,15 +43,16 @@ print "Finished reading  %i abstracts.txt!" % len(abstractList)
 
 """(2) Create token list from abstractList; unicode encoding"""
 print "Creating token list ..."
-abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in line.split()] for line in abstractList]
-abstractTokens = [[stem(word, stemmer=LEMMA) for word in line] for line in abstractTokens]
+#abstractTokens = [[unicode(word, "utf-8", errors = "ignore") for word in line.split()] for line in abstractList]
+#abstractTokens = [[stem(word, stemmer=LEMMA) for word in line] for line in abstractTokens]
+abstractTokens = [[stem(word, stemmer=LEMMA) for word in line.split()] for line in abstractList]
 
 """Build dictionary and do dictionary pre-processing"""
 print "Building dicitonary ..."
 dictionary = corpora.Dictionary(abstractTokens)
 #remove stop words and words that appear only once
 stopwords = stopwords.words('english')
-exclusionlist = ['-', 'se', 'h', 'd', 'iee'] #manually populated; add to this if necessary
+exclusionlist = ['-', 'se', 'h', 'd', 'iee', '+'] #manually populated; add to this if necessary
 stopwords = stopwords + exclusionlist
 stop_ids = [dictionary.token2id[stopword] for stopword in stopwords if stopword in dictionary.token2id]
 once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq ==1]
@@ -65,7 +67,7 @@ dictionary.save(os.path.join(__location__, 'data/KeyVis.dict')) #store dictionar
 class MyCorpus(object):
 	def __iter__(self):
 		for line in open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'rU'):
-			line = unicode(line, errors='ignore')
+			#line = unicode(line, 'utf-8', errors='ignore')
 			lowers = line.lower()
 			tokenList = lowers.split()
 			output = [stem(word, stemmer=LEMMA) for word in tokenList]

@@ -18,8 +18,10 @@ Writes abstract to abstracts.txt
 
 import os, csv, re
 import time
-__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+import codecs
+from unicodeHandling.UnicodeCSVHandler import *
 
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 """(1) Iterate through files in the KeyVisCorpora-folder and append each abstract to abstractList"""
 """In addition, append keywords to the abstracts"""
@@ -30,7 +32,10 @@ corporaFolder = os.path.join(__location__, 'KeyVisCorpora')
 for publication in os.listdir(corporaFolder):
 	if publication.endswith('.csv'): #only read csv-files!
 		with open(os.path.join(corporaFolder, publication), 'rU') as csvfile:
+			#csvHandler = UnicodeCSVHandler()
+			#cr = csvHandler.read(open(os.path.join(corporaFolder, publication), 'rU'))
 			cr = csv.reader(csvfile, delimiter='\t') #use tabstops delimiters!
+			
 			for document in cr:
 				if (len(document) >= 13):
 					keywords = document[12] # keywords are in the csv-files' column 13
@@ -39,6 +44,7 @@ for publication in os.listdir(corporaFolder):
 						keywords = keywords.lower() #convert to lowercase
 						#Using RegEx to clean up the data
 						keywords = re.sub('[;]', ' ', keywords)
+						keywords = re.sub('[\']', '', keywords)
 						keywords = re.sub('[:|.|[|]|]', '', keywords)
 						keywords = re.sub('[0-9]+', '', keywords) #remove integers
 						#keywords = re.sub('[a-z]', '', keywords) #remove single chars
@@ -46,8 +52,9 @@ for publication in os.listdir(corporaFolder):
 						abstract = abstract.lower() #convert to lowercase
 						#Using RegEx to clean up the data
 						abstract = re.sub('[;|,|:|.|?|!|(|)|]', '', abstract)
-						abstract = abstract + ' ' + keywords #concatenate abstracts and keywords
+						abstract = abstract + ' ' + keywords #concatenate abstracts and keywords)
 						abstractList.append(abstract)
+					
 
 print "Finished reading  %i abstracts!" % len(abstractList)
 
@@ -57,13 +64,15 @@ print "Finished reading  %i abstracts!" % len(abstractList)
 print "Building keyword dictionary ..."
 keywordDict = {}
 with open(os.path.join(__location__,'data/KeyVisData.csv'),'rU') as input:
-    cr = csv.reader(input)
-    for line in cr:
-    	keywords = [x.lower() for x in line]
-        for term in keywords:
-        	term.strip()
-        	termLength = len(term)
-        	keywordDict[term] = termLength #store term it's length in a dictionary 
+	#csvHandler = UnicodeCSVHandler()
+	#cr = csvHandler.read(input, 'rU')
+	cr = csv.reader(input)
+	for line in cr:
+		keywords = [x.lower() for x in line]
+		for term in keywords:
+			term.strip()
+			termLength = len(term)
+			keywordDict[term] = termLength #store term it's length in a dictionary 
 print "Finished building keyword dictionary with %i terms!" % len(keywordDict.keys())
 
 
@@ -76,29 +85,34 @@ start = time.time()
 # Prepare finished joined keyword list. Should be faster than
 # joining all keywords for each abstract (remains to be seen).
 
-joinedKeywordList = {}
+joinedKeywordMap = {}
 for keyword in sortedList:
 		tokenlist = keyword.split()
 		joinedKeyword = '_'.join(tokenlist)
+		joinedKeywordMap[keyword] = joinedKeyword
 		
 #start replacment process with longest multi-word terms 
-newAbstractList = []
+# To test
+newAbstractList = ['' for x in range(len(abstractList))]
+i = 0
 for abstract in abstractList:
 	for keyword in sortedList:
-		tokenlist = keyword.split()
-		joinedKeyword = '_'.join(tokenlist)
+		joinedKeyword = joinedKeywordMap[keyword]
 		if (keyword != joinedKeyword):
  			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
  			# the following line is a workaround needed to fix issues with missing ' ' separation after 
  			# keyword replacement
  			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
-	newAbstractList.append(abstract)
+	#newAbstractList.append(abstract)
+	newAbstractList[i] = abstract
+	i = i + 1
 print "Finished joining multi-word terms after", time.time() - start, "seconds!"
 
 """(4) Write to file"""		
 print "Writing to file ..."
+
 with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'w') as file:
-	for abstract in newAbstractList:
+	for abstract in abstractList:
 		output = abstract + '\n'
 		file.write(output)
 print "Pre-processing done!"

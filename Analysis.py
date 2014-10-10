@@ -12,11 +12,16 @@ distribution of probabilities, etc.).
 
 import os, csv, re
 import time
-from DistanceFunction import *
+from dataModel.ObjectWithDistanceFunction import *
+from dataModel.Topic import *
+import codecs
 
+# Get file location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
 print __location__
+
+# Set up logger
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 # Model parameters
 ''' 
@@ -28,40 +33,34 @@ k = 20
 keywordProbability_maps = [dict() for x in range(k)]
 #print len(keywordProbability_maps)
 
+# Init container for k topics
+topics = [Topic() for x in range(k)]
+
 # Open csv with LDA topics
+#with codecs.open('data/LDATopics.csv', 'rb', 'utf-8') as topicfile:
 with open('data/LDATopics.csv', 'rb') as topicfile:
-    topiclist = csv.reader(topicfile, delimiter=' ', quotechar='|')
+    topicInputData = csv.reader(topicfile, delimiter=' ', quotechar='|')
     # i denotes number of row in csv (up to number of features)
     i = 0
     topicKeywords = []
     
-    for row in topiclist:
+    # Reminder: In used format, each column represents one topic
+    for row in topicInputData:
         if i > 0:
             topicKeywords = row[0].split(',')
             print '\n----------------\nrow #' + str(i) + "\n----------------"
         
             # Insert data into maps.
-            # inner_i denotes number of current topic this keyword/probability mapping is associated with.
+            # inner_i denotes number of current topic this keyword/probability mapping is associated with,
+            # i.e.: We read the ith-most important keyword for each topic (and write it in our map).
             inner_i = 0
             for keywordProbabilities in topicKeywords:
-                # data contains [0]: keyword and [1]: probability
-                data = keywordProbabilities.split('|')
-                # Store keyword as key, probability as value
-                # Temporary workaround: Only execute if branch if STRING|FLOAT existent. Then remove " from data 
-                # (should be cleared once encoding - on workflow-scope - is fixed).
-                if len(data) > 1:
-                    data[1] = data[1].replace('"', '')
-                    keywordProbability_maps[inner_i][data[0]] = float(data[1])
-                
-                    print data
-                    #print keywordProbability_maps[inner_i]
-                    inner_i = inner_i + 1
-        
+                inner_i = inner_i + topics[inner_i].addKeywordDataset(keywordProbabilities)
         i = i + 1
         topicKeywords = []
-        
+
 # Instantiate distance function object 
-df = NaiveDistanceFunction()
+#df = NaiveDistanceFunction()
 
 # Test distance calculation for two topics (here: between topic 1 and topic 2)
-df.calculateDistance(keywordProbability_maps[0], keywordProbability_maps[1])
+#df.calculateDistance(keywordProbability_maps[0], keywordProbability_maps[1])
