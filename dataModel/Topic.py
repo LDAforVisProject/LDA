@@ -5,19 +5,20 @@ Created on 08.10.2014
 '''
 
 import logging
-from dataModel.ObjectWithDistanceFunction import *
+import math
+from dataModel.ObjectWithDistanceFunction import ObjectWithDistanceFunction
 
 class Topic(ObjectWithDistanceFunction):
     '''
     Class for topic data and corresponding methods.
     '''
     
-    # Data
-    _keywordProbabilityMap = dict()
-    
     # Constructor
-    def __init__(self):
+    def __init__(self, topicNumber):
+        # Data
         self.logger = logging.getLogger(__name__)
+        self._topicNumber = topicNumber
+        self._keywordProbabilityMap = dict()
  
     ''' 
     Add keyword data set to map.
@@ -34,26 +35,86 @@ class Topic(ObjectWithDistanceFunction):
             self._keywordProbabilityMap[data[0]] = float(data[1])
         
             #print self._keywordProbabilityMap
-            print keywordDataset
+            #print "Topic #" + str(self._topicNumber) + ":\t", keywordDataset
             #print data
             return 1
         
         return 0
             
  
+    # ---------------------------------------
     # Distance functions
     
+    # Euclidean distance / L2-norm
     def calculateL2Distance(self, objectToCompare):
-        self.logger.info("\nCalculating L2 distance/norm.")
+        self.logger.info("Calculating L2 distance/norm. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
+        
+        squaredSum = 0
+        # Assume all words are present in self._keywordProbabilityMap as well as objectToCompare._keywordProbabilityMap.
+        for keyword, p in self._keywordProbabilityMap.iteritems():
+            diff = p - objectToCompare._keywordProbabilityMap[keyword]
+            squaredSum = squaredSum + diff * diff
+            
+        return math.sqrt(squaredSum)
         
     def calculateHellingerDistance(self, objectToCompare):
-        self.logger.info("\nCalculating Hellinger distance.")
+        self.logger.info("Calculating Hellinger distance. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
+        
+        result = 0
+        # Assume all words are present in self._keywordProbabilityMap as well as objectToCompare._keywordProbabilityMap.
+        for keyword, p in self._keywordProbabilityMap.iteritems():
+            tempResult = math.sqrt(p) - math.sqrt(objectToCompare._keywordProbabilityMap[keyword]) 
+            
+            result = result + tempResult * tempResult
+            
+        result = result / math.sqrt(2)
+        
+        return result
+        
     
-    def calculateMahalanobisDistance(self, objectToCompare):
-        self.logger.info("\nCalculating Mahalanobis distance.")
+    # Bhattacharyya distance
+    def calculateBhattacharyyaDistance(self, objectToCompare):
+        self.logger.info("Calculating Bhattacharyya distance. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
         
+        result = 0
+        # Assume all words are present in self._keywordProbabilityMap as well as objectToCompare._keywordProbabilityMap.
+        for keyword, p in self._keywordProbabilityMap.iteritems():
+            result = result + math.sqrt(p * objectToCompare._keywordProbabilityMap[keyword])
+
+        result = math.log(result, 2) * (-1)
+         
+        return result 
+    
+    # Kullback-Leibler distance to base 2        
     def calculateKullbackLeiblerDistance(self, objectToCompare):
-        self.logger.info("\nCalculating Kullback-Leibler distance.")
+        self.logger.info("Calculating Kullback-Leibler distance. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
         
+        result = 0
+        # Assume all words are present in self._keywordProbabilityMap as well as objectToCompare._keywordProbabilityMap.
+        for keyword, p in self._keywordProbabilityMap.iteritems():
+            result = result + p * math.log(p / objectToCompare._keywordProbabilityMap[keyword], 2)
+            
+        return result
+    
+    # Jensen-Shannon distance to base 2    
     def calculateJensenShannonDivergence(self, objectToCompare):
-        self.logger.info("\nCalculating Jensen-Shannon divergence.")
+        self.logger.info("Calculating Jensen-Shannon divergence. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
+        
+        tempSum_P = 0
+        tempSum_Q = 0
+        # Assume all words are present in self._keywordProbabilityMap as well as objectToCompare._keywordProbabilityMap.
+        for keyword, p in self._keywordProbabilityMap.iteritems():
+            # Value for "distribution" P (~ self) for this keyword
+            currentValue_P = p
+            # Value for "distribution" Q (~ objectToCompare) for this keyword
+            currentValue_Q = objectToCompare._keywordProbabilityMap[keyword]
+            # Value for mixture "distribution" M for this keyword
+            currentValue_M = (currentValue_P + currentValue_Q) / 2
+            
+            tempSum_P = tempSum_P + currentValue_P * (math.log(currentValue_P, 2) - math.log(currentValue_M, 2))
+            tempSum_Q = tempSum_Q + currentValue_Q * (math.log(currentValue_Q, 2) - math.log(currentValue_M, 2))
+            
+        # Calculate and return final results
+        return (0.5 * (tempSum_P + tempSum_Q))
+      
+    # ---------------------------------------

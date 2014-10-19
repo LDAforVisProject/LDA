@@ -24,9 +24,6 @@ print __location__
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 # Model parameters
-''' 
-@todo: Model parameters to be delivered as arguments, not to be specificed as constants. 
-''' 
 k = 20
 
 # One map/dictionary for each topic: keyword -> probability for this topic
@@ -34,10 +31,18 @@ keywordProbability_maps = [dict() for x in range(k)]
 #print len(keywordProbability_maps)
 
 # Init container for k topics
-topics = [Topic() for x in range(k)]
+topics = [Topic(x) for x in range(k)]
+
+'''
+@todo: 
+    - Implement distance functions
+'''
+
+# ---------------------------------------------------------------------------------------------------------------
 
 # Open csv with LDA topics
 #with codecs.open('data/LDATopics.csv', 'rb', 'utf-8') as topicfile:
+# Option: Try reading with unicodecsv.reader to avoid remaining charset-problem 
 with open('data/LDATopics.csv', 'rb') as topicfile:
     topicInputData = csv.reader(topicfile, delimiter=' ', quotechar='|')
     # i denotes number of row in csv (up to number of features)
@@ -48,8 +53,8 @@ with open('data/LDATopics.csv', 'rb') as topicfile:
     for row in topicInputData:
         if i > 0:
             topicKeywords = row[0].split(',')
-            print '\n----------------\nrow #' + str(i) + "\n----------------"
-        
+            #print '\n----------------\nrow #' + str(i) + "\n----------------"
+            
             # Insert data into maps.
             # inner_i denotes number of current topic this keyword/probability mapping is associated with,
             # i.e.: We read the ith-most important keyword for each topic (and write it in our map).
@@ -59,8 +64,19 @@ with open('data/LDATopics.csv', 'rb') as topicfile:
         i = i + 1
         topicKeywords = []
 
-# Instantiate distance function object 
-#df = NaiveDistanceFunction()
+# ---------------------------------------------------------------------------------------------------------------
+
+# Test: Compare two topics with...
+#    ...L2 distance/norm
+print "L2: " + str(topics[0].calculateL2Distance(topics[1]))
+#    ..Kullback-Leibler distance
+print "Kullback-Leibler: " + str(topics[0].calculateKullbackLeiblerDistance(topics[1]))
+#    ...Jensen-Shannon divergence
+print "Jensen-Shannon: " + str(topics[0].calculateJensenShannonDivergence(topics[1]))
+#    ...Bhattacharyya distance
+print "Bhattacharyya: " + str(topics[0].calculateBhattacharyyaDistance(topics[1]))
+#    ...Hellinger distance
+print "Hellinger: " + str(topics[0].calculateHellingerDistance(topics[1]))
 
 # Test distance calculation for two topics (here: between topic 1 and topic 2)
 #df.calculateDistance(keywordProbability_maps[0], keywordProbability_maps[1])

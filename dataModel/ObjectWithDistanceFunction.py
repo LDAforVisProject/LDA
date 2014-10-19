@@ -30,7 +30,7 @@ class ObjectWithDistanceFunction(object):
         print "\ncompareTopics()."
     
     @abstractmethod
-    def calculateMahalanobisDistance(self, objectToCompare):
+    def calculateBhattacharyyaDistance(self, objectToCompare):
         print "\ncompareTopics()."
         
     @abstractmethod

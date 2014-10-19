@@ -43,6 +43,9 @@ for publication in os.listdir(corporaFolder):
 					if (keywords != "Author Keywords" and len(keywords) > 0): 
 						keywords = keywords.lower() #convert to lowercase
 						#Using RegEx to clean up the data
+						'''
+						@todo: Numbers/years to remove?
+						''' 
 						keywords = re.sub('[;]', ' ', keywords)
 						keywords = re.sub('[\']', '', keywords)
 						keywords = re.sub('[:|.|[|]|]', '', keywords)
@@ -96,10 +99,11 @@ for keyword in sortedList:
 newAbstractList = ['' for x in range(len(abstractList))]
 i = 0
 for abstract in abstractList:
+	strippedAbstract = abstract.strip()
 	for keyword in sortedList:
 		joinedKeyword = joinedKeywordMap[keyword]
 		if (keyword != joinedKeyword):
- 			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+ 			abstract = re.sub(keyword, joinedKeyword, strippedAbstract)
  			# the following line is a workaround needed to fix issues with missing ' ' separation after 
  			# keyword replacement
  			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***

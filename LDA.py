@@ -61,15 +61,10 @@ def visualizeTopics(lda, k, numberOfTerms):
 		for p, word in topic:
 			topicList = topicList + word + ', '
 			topicList_withProbabilities = topicList_withProbabilities + word + '|' + str(p) + ', '
-		
-		''' 
-		@todo: Fix encoding issues (consider workflow). See issue #5 and https://stackoverflow.com/questions/491921/unicode-utf8-reading-and-writing-to-files-in-python,
-				particularly the second-best-rated answer (codes.open()).
-		''' 
+
 		print topicList[:-2]
 		
 		topicListCollection_withProbabilities.append(topicList_withProbabilities)
-		
 		topicList = ''
 		topicList_withProbabilities = ''
 
@@ -93,8 +88,6 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 			for p, word in topic:
 				subTopicList.append(word + '|' + str(p))
 			topicList.append(subTopicList)
-			#print "Topic #" + str(i)
-			#print subTopicList
 		
 		#transpose 2-d topic array; topics are now represented column-wise
 		topicListTransposed = [list(j) for j in zip(*topicList)] 
@@ -111,16 +104,6 @@ def writeTopics(outputfile, lda, k, numberOfTerms):
 				wunicode.writerow(q)
 				
 			except UnicodeEncodeError as e:
-				"""
-				@todo: Install chardet, try to convert broken keyword strings into ASCII (or other working encoding).
-						At least find working method to detect broken keyword strings.
-				
-				qAlternative = []
-				i = 0
-				for keyword in q:
-					qAlternative[i] = keyword.decode(encoding['encoding']).encode('ascii')
-					i++
-				"""
 				errorIndex = errorIndex + 1
 				print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
 				print e
