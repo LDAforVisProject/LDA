@@ -14,7 +14,7 @@ import os, csv, re
 import time
 from dataModel.ObjectWithDistanceFunction import *
 from dataModel.Topic import *
-import codecs
+import powerlaw
 
 # Get file location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -28,15 +28,9 @@ k = 20
 
 # One map/dictionary for each topic: keyword -> probability for this topic
 keywordProbability_maps = [dict() for x in range(k)]
-#print len(keywordProbability_maps)
 
 # Init container for k topics
 topics = [Topic(x) for x in range(k)]
-
-'''
-@todo: 
-    - Implement distance functions
-'''
 
 # ---------------------------------------------------------------------------------------------------------------
 
@@ -63,9 +57,22 @@ with open('data/LDATopics.csv', 'rb') as topicfile:
                 inner_i = inner_i + topics[inner_i].addKeywordDataset(keywordProbabilities)
         i = i + 1
         topicKeywords = []
-
+        
+# Created sorted list representation of keyword/probability map
+for topic in topics:
+    topic.createdSortedListOfTuples()
+    
 # ---------------------------------------------------------------------------------------------------------------
 
+'''
+@todo Integrate power law fitting into figures (sub-plots).
+'''
+data = np.array([1.7, 3.2, 4.5]) # data can be list or numpy array
+results = powerlaw.Fit(data)
+print results
+
+#topics[0].plotKeywordProbabilities()
+    
 # Test: Compare two topics with...
 #    ...L2 distance/norm
 print "L2: " + str(topics[0].calculateL2Distance(topics[1]))

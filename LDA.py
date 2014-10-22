@@ -40,11 +40,12 @@ print mm
 @todo: Model parameters to be delivered as arguments, not to be specificed as constants. 
 ''' 
 k = 20	#number of topics
+passes = 10
 nOfTerms = len(dictionary)
 
 #TRAIN LDA MODEL
 lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k, 
-	update_every=5, chunksize=100, passes=5)
+	update_every=5, chunksize=100, passes=passes)
 
 #Method to print the k-most-likely terms for all found topics in a 
 #more reader-friendly method

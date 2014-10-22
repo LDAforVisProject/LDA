@@ -6,6 +6,11 @@ Created on 08.10.2014
 
 import logging
 import math
+import operator
+import numpy as np
+import matplotlib.pyplot as plt
+import powerlaw
+
 from dataModel.ObjectWithDistanceFunction import ObjectWithDistanceFunction
 
 class Topic(ObjectWithDistanceFunction):
@@ -19,10 +24,14 @@ class Topic(ObjectWithDistanceFunction):
         self.logger = logging.getLogger(__name__)
         self._topicNumber = topicNumber
         self._keywordProbabilityMap = dict()
+        # To be initialized later
+        self._sortedTupleList = None
+        self._sortedKeywordList = None
+        self._sortedProbabilityList = None
  
     ''' 
     Add keyword data set to map.
-    Returns 1 if keyword dataset contains resonable content. 
+    @return 1 if keyword dataset contains resonable content. 
     '''
     def addKeywordDataset(self, keywordDataset):
         # data contains [0]: keyword and [1]: probability
@@ -40,7 +49,97 @@ class Topic(ObjectWithDistanceFunction):
             return 1
         
         return 0
-            
+    
+    '''
+    Creates sorted list of keyword/probability tuples with descending probabilites, used for visualization and comparisons.
+    '''
+    def createdSortedListOfTuples(self):
+        # Necessary to keep sortedTupleList as a attribute?
+        self._sortedTupleList = sorted(self._keywordProbabilityMap.items(), key = operator.itemgetter(1), reverse=True)
+        self._sortedKeywordList = map(operator.itemgetter(0), self._sortedTupleList)
+        self._sortedProbabilityList = map(operator.itemgetter(1), self._sortedTupleList)
+        
+        #print self._sortedTupleList[1000]
+        #print self._sortedKeywordList[1000]
+        #print self._sortedProbabilityList[1000]
+    
+    ''' 
+    Print object.
+    @return Result to be printed. 
+    '''
+    def __str__(self):
+        result = "Topic #" + str(self._topicNumber) + "\n"
+        
+        for item in self._sortedTupleList:
+            result = result + item[0] + "|" + str(item[1]) + "\n"
+        
+        result = result + "\n"
+        
+        return result 
+    
+    # Sources: 
+    #    http://matplotlib.org/examples/api/barchart_demo.html
+    #    https://stackoverflow.com/questions/5207646/python-matplot-bar-function-arguments
+    def plotKeywordProbabilities(self):
+        self.logger.info("Drawing bar plot with probabilites of keywords, sorted descendingly.")
+        probMax = max(self._sortedProbabilityList)
+        self.logger.info("    Maximum in probabilities: " + str(probMax))
+        
+        # --------------------------------------
+        
+        # Instantiate new figure
+        fig = plt.figure()
+
+        # Set data
+        n = len(self._sortedKeywordList)
+        x = np.arange(n)
+        y = self._sortedProbabilityList
+        
+        # --------------------------------------
+        
+        # Create new subplot (linear scale)
+        ax_linear = fig.add_subplot(1, 2, 1)
+        
+        # Add a bar plot to the axis, ax.
+        ax_linear.bar(x, y)
+    
+        ax_linear.set_ylim((0, probMax * 6 / 5))
+        ax_linear.set_xlim((0, 500))
+
+        # --------------------------------------
+        
+        # Create new subplot (logarithmic scale)
+        ax_log = fig.add_subplot(1, 2, 2)
+        
+        # Add a bar plot to the axis, ax.
+        ax_log.bar(x, y)
+        ax_log.set_yscale('log')
+        
+        ax_log.set_ylim((0, probMax * 6 / 5))
+        ax_log.set_xlim((0, 750))        
+        
+        # --------------------------------------
+        
+        # After you're all done with plotting commands, show the plot.
+        plt.show()
+
+        
+        #data = array([1.7, 3.2 ...]) # data can be list or numpy array
+        #results = powerlaw.Fit(data)
+        #print results.power_law.alpha
+        #print results.power_law.xmin
+        #R, p = results.distribution_compare('power_law', 'lognormal')
+    
+    '''
+    Print n-th most relevant keywords for easy comparisons with other topics.
+    @param n Number of keywords to be printed.
+    '''
+#   def printLimitedKeywordList(self, n):
+#       n = n + 1
+
+       #for keyword, p in self._keywordProbabilityMap.iteritems():
+       #     result = result + "     " + keyword + "|" + str(p) + "\n" 
+        
  
     # ---------------------------------------
     # Distance functions
