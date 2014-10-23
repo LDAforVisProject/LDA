@@ -64,14 +64,7 @@ for topic in topics:
     
 # ---------------------------------------------------------------------------------------------------------------
 
-'''
-@todo Integrate power law fitting into figures (sub-plots).
-'''
-data = np.array([1.7, 3.2, 4.5]) # data can be list or numpy array
-results = powerlaw.Fit(data)
-print results
-
-#topics[0].plotKeywordProbabilities()
+topics[0].plotKeywordProbabilities()
     
 # Test: Compare two topics with...
 #    ...L2 distance/norm
