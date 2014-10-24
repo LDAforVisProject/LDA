@@ -10,8 +10,6 @@ import operator
 import numpy as np
 import matplotlib.pyplot as plt
 import powerlaw as powerlaw_dedicated
-from scipy.stats import powerlaw
-
 from dataModel.ObjectWithDistanceFunction import ObjectWithDistanceFunction
 
 class Topic(ObjectWithDistanceFunction):
@@ -98,7 +96,7 @@ class Topic(ObjectWithDistanceFunction):
         # --------------------------------------
         
         # Create new subplot (linear scale)
-        ax_linear = fig.add_subplot(2, 2, 1)
+        ax_linear = fig.add_subplot(1, 2, 1)
         
         # Add a bar plot to the axis, ax.
         ax_linear.bar(x, y)
@@ -109,7 +107,7 @@ class Topic(ObjectWithDistanceFunction):
         # --------------------------------------
         
         # Create new subplot (logarithmic scale)
-        ax_log = fig.add_subplot(2, 2, 2)
+        ax_log = fig.add_subplot(1, 2, 2)
         
         # Add a bar plot to the axis, ax.
         ax_log.bar(x, y)
@@ -120,24 +118,15 @@ class Topic(ObjectWithDistanceFunction):
         
         # --------------------------------------
         
-        
-        '''
-        @todo Integrate power law fitting into figures (sub-plots).
-        '''
-        
-        ax_linear_powerlaw = fig.add_subplot(2, 2, 3)
-        
         # Fit power law parameters to distribution. 
         # Source: https://pypi.python.org/pypi/powerlaw
-        fit = powerlaw_dedicated.Fit(y[:1000], min(y), xmax = 1.0, estimate_discrete=True)
-        print fit.power_law.alpha
-        print fit.power_law.xmin
-        print fit.power_law.xmax
-        # Use scipy to plot power law (ran into problems with powerlaw's plotting functions
-        #x = np.linspace(powerlaw.ppf(0.01, results.power_law.alpha), powerlaw.ppf(0.99, results.power_law.alpha), 100)
-        #ax_linear_powerlaw.plot(x, results.pdf(), label='powerlaw pdf')
+        fit = powerlaw_dedicated.Fit(y[:500], xmin=min(y[:500]), xmax = 1.0, estimate_discrete=False)
+        print "alpha = " + str(fit.power_law.alpha)
+        print "xmin = " + str(fit.power_law.xmin)
+        print "xmax = " + str(fit.power_law.xmax)
         
-        alpha = fit.power_law.alpha / 1.25
+        alpha = fit.power_law.alpha / 2.5
+        print "Modified alpha = " + str(alpha)
         x_power = np.arange(1, 1000)
         y_power = [probMax * (value ** (-alpha)) for value in np.arange(1, 1000)]
 
@@ -145,19 +134,6 @@ class Topic(ObjectWithDistanceFunction):
         ax_linear.set_ylim((0, probMax * 6 / 5))
         ax_linear.set_xlim((0, 500)) #_powerlaw
         
-        
-        # Use powerlaw to plot results
-        #R, p = fit.distribution_compare('power_law', 'lognormal')
-        #fit.plot_pdf(ax=ax_linear_powerlaw)
-        #ax_linear_powerlaw.set_ylim((0, 1))
-        #ax_linear_powerlaw.set_xlim((0, 10))
-        
-        #powerlaw_dedicated.plot_pdf(data=y, ax=ax_linear_powerlaw)
-        #fit.plot_pdf(ax=ax_linear_powerlaw, original_data=False, linear_bins=False)
-        
-        #print p
-        #print R
-        # After you're all done with plotting commands, show the plot.
         plt.show()
             
     

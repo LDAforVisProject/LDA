@@ -10,11 +10,9 @@ distribution of probabilities, etc.).
 
 '''
 
-import os, csv, re
+import os, csv
 import time
-from dataModel.ObjectWithDistanceFunction import *
 from dataModel.Topic import *
-import powerlaw
 
 # Get file location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
