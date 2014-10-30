@@ -91,7 +91,7 @@ distances = [0] * numberOfDistances
 # Instantiate new figure
 fig = plt.figure()
 plt.xlabel('\nDistance (in percent of ' + r'$\sqrt{k} = $' + str(math.sqrt(numberOfDimensions)) + ')')
-plt.ylabel('Count\n\n')
+plt.ylabel('Frequency (in percent of number of distances)\n\n')
 fig.patch.set_alpha(0.0)
                     
 #fig.tight_layout()
@@ -101,12 +101,20 @@ plt.yticks([])
 # Define plot limits
 x_min = -math.sqrt(numberOfDimensions)
 x_max = math.sqrt(numberOfDimensions) * 4
+y_min = 0
+y_max = numberOfDistances / 10
+
 # Create x-ticks (sqrt(dim) ~ 100%)
 xAxis_translationFactor = 100 / math.sqrt(numberOfDimensions)
-#x_ticks_range = np.arange(-numberOfDimensions / 8, numberOfDimensions, 0.5, dtype=np.float)
+yAxis_translationFactor = 100.0 / numberOfDistances
+
 x_ticks_range = np.arange(x_min, x_max, 0.5, dtype=np.float)
 x_ticks = [int((x * xAxis_translationFactor)) for x in x_ticks_range]
 
+y_ticks_range = np.arange(y_min, y_max, (y_max - y_min) / 10, dtype=np.float)
+y_ticks = [round((y * yAxis_translationFactor), 2) for y in y_ticks_range]
+
+# Draw plots
 currentSubplotIndex = 1
 for distanceFunctionName in distanceFunctionNames:
     # Add new Subplot
@@ -126,16 +134,17 @@ for distanceFunctionName in distanceFunctionNames:
     ax.axvline(x=math.sqrt(numberOfDimensions), ymin=0, ymax = 100, linewidth=3, color='r')
     
     # Set tick labels and range/axis limits
-    #plt.ylim(0, max(distances))
-    ax.set_ylim(0, numberOfDistances / 10)
-    ax.set_xticks(x_ticks_range, x_ticks)
-    plt.xticks(x_ticks_range, x_ticks, fontsize=8)
+    ax.set_ylim(y_min, y_max)
     ax.set_xlim(x_min, x_max)
+    
+    #ax.set_xticks(x_ticks_range, x_ticks)
+    plt.xticks(x_ticks_range, x_ticks, fontsize=8)
+    plt.yticks(y_ticks_range, y_ticks, fontsize=8)
+    
     ax.grid(True)
     
     # Increment index
     currentSubplotIndex = currentSubplotIndex + 1
 
-#plt.tight_layout()
 plt.suptitle('Point distances with k = ' + str(numberOfDimensions) + ', n = ' + str(numberOfPoints), fontsize=15)
 plt.show()
