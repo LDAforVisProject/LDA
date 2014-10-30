@@ -79,7 +79,10 @@ class Point(object):
         for index, coordinate in enumerate(self.coordinates):
             result = result + math.sqrt(self.coordinates[index] * pointToCompare.coordinates[index])
 
-        result = math.log(result, 2) * (-1)
+        '''
+        @todo Actually times (-1) - results in negative distance values, though. Problem with implementation of logarithm? Forumla should be implemented correctly.
+        '''
+        result = math.log(result, 2)
          
         return result 
     
