@@ -23,7 +23,6 @@ class Point(object):
         if self.base == 'cube':
             for index, coordinate in enumerate(self.coordinates):
                 self.coordinates[index] = random.random()
-                #print self.coordinates[index]
                 
         else:
             raise Exception("This shape is not supported. Terminating program.")

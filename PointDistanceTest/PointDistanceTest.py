@@ -9,18 +9,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-# Parameters
-numberOfPoints      = 100
+# Number of points
+numberOfPoints      = 20
 # Number of distances between numberOfPoints points (Gaussian sum formula)
 numberOfDistances   = ( ( (numberOfPoints - 1) * (numberOfPoints - 1) + numberOfPoints - 1) / 2)
-print numberOfDistances
 # Number of dimensions
-numberOfDimensions  = 100
+numberOfDimensions  = 10
 
 # Coordinate space base ('cube')
 shape = 'cube'
 # Distance function ('L2', 'Bhattacharyya', 'Hellinger', 'KullbackLeibler', 'JensenShannon')
-distanceFunctionName = 'L2'
+distanceFunctionName = 'JensenShannon'
 
 # Data
 points = [Point(dimension=numberOfDimensions, base=shape) for x in range(numberOfPoints)]
@@ -36,14 +35,29 @@ for outerIndex in np.arange(0, numberOfPoints - 1):
         currentDistanceIndex = currentDistanceIndex + 1 
         #print distances[currentDistanceIndex]
 
+# Create x-ticks (sqrt(dim) ~ 100%)
+xAxis_translationFactor = 100 / math.sqrt(numberOfDimensions)
+x_ticks_range = range(numberOfDimensions)
+x_ticks = [int((x * xAxis_translationFactor)) for x in x_ticks_range]
+print xAxis_translationFactor
+print x_ticks
+print range(numberOfDimensions)
+
 
 # https://stackoverflow.com/questions/11750276/matplotlib-how-to-convert-a-histogram-to-a-discrete-probability-mass-function
 #distancesNormalized = np.histogram(distances,bins=50,normed=0)[0]/float(len(distances))
 n, bins, patches = plt.hist(distances, bins=50, normed=0, facecolor='g', alpha=0.75)
-plt.xlabel('Distance')
+plt.xlabel('Distance (in percent of ' + r'$\sqrt{k} = $' + str(math.sqrt(numberOfDimensions)) + ')')
 plt.ylabel('Count')
+
+# Mark sqrt(numberOfDimensions)
+plt.axvline(x=math.sqrt(numberOfDimensions), ymin=0, ymax = 100, linewidth=3, color='r')
+
+# Set tick labels and range/axis limits
 #plt.ylim(0, max(distances))
 plt.ylim(0, numberOfDistances / 10)
+plt.xticks(x_ticks_range, x_ticks)
+plt.xlim(0, math.sqrt(numberOfDimensions * 2) * 1)
 plt.title('Point distances with distance function ' + distanceFunctionName + ' (k = ' + str(numberOfDimensions) + ', n = ' + str(numberOfPoints) + ')')
 plt.grid(True)
 plt.show()
