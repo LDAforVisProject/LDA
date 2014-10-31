@@ -8,6 +8,9 @@ import math
 import random
 import logging
 
+# Set up logger
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
 '''
 Point coordinates use a unit (hyper-)cube.
 '''
@@ -44,7 +47,7 @@ class Point(object):
     
     # Euclidean distance / L2-norm
     def calculateL2Distance(self, pointToCompare):
-        self.logger.info("Calculating L2 distance/norm.")
+        #self.logger.info("Calculating L2 distance/norm.")
         
         squaredSum = 0
         # Assume all words are present in self._keywordProbabilityMap as well as pointToCompare._keywordProbabilityMap.
@@ -56,7 +59,7 @@ class Point(object):
         return math.sqrt(squaredSum)
         
     def calculateHellingerDistance(self, pointToCompare):
-        self.logger.info("Calculating Hellinger distance.")
+        #self.logger.info("Calculating Hellinger distance.")
         
         result = 0
         # Assume all words are present in self._keywordProbabilityMap as well as pointToCompare._keywordProbabilityMap.
@@ -72,7 +75,7 @@ class Point(object):
     
     # Bhattacharyya distance
     def calculateBhattacharyyaDistance(self, pointToCompare):
-        self.logger.info("Calculating Bhattacharyya distance.")
+        #self.logger.info("Calculating Bhattacharyya distance.")
         
         result = 0
         # Assume all words are present in self._keywordProbabilityMap as well as pointToCompare._keywordProbabilityMap.
@@ -88,7 +91,7 @@ class Point(object):
     
     # Kullback-Leibler distance to base 2        
     def calculateKullbackLeiblerDistance(self, pointToCompare):
-        self.logger.info("Calculating Kullback-Leibler distance.")
+        #self.logger.info("Calculating Kullback-Leibler distance.")
         
         result = 0
         # Assume all words are present in self._keywordProbabilityMap as well as pointToCompare._keywordProbabilityMap.
@@ -99,7 +102,7 @@ class Point(object):
     
     # Jensen-Shannon distance to base 2    
     def calculateJensenShannonDivergence(self, pointToCompare):
-        self.logger.info("Calculating Jensen-Shannon divergence.")
+        #self.logger.info("Calculating Jensen-Shannon divergence.")
         
         tempSum_P = 0
         tempSum_Q = 0
