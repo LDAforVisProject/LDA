@@ -66,8 +66,7 @@ parser = createConfiguredOptionParser()
 # Parse arguments
 #    Determine number of dimensions
 (options, args) = parser.parse_args()
-options.k = 1000
-options.n = 5000
+
 if options.k == None:
     logger.info("WARNING: No option given for k (number of dimension. Assuming k = 10).")
     numberOfDimensions = 50
