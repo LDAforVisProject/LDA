@@ -177,7 +177,6 @@ class Topic(ObjectWithDistanceFunction):
         
         return result
         
-    
     # Bhattacharyya distance
     def calculateBhattacharyyaDistance(self, objectToCompare):
         self.logger.info("Calculating Bhattacharyya distance. Using topics #" + str(self._topicNumber) + " and #" + str(objectToCompare._topicNumber) + ".")
@@ -224,3 +223,5 @@ class Topic(ObjectWithDistanceFunction):
         return (0.5 * (tempSum_P + tempSum_Q))
       
     # ---------------------------------------
+    
+    # Analyze LDA function output files

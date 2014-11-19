@@ -88,7 +88,7 @@ else:
         
 # Number of distances between numberOfPoints points (Gaussian sum formula)
 numberOfDistances = ( ( numberOfPoints * (numberOfPoints - 1) ) / 2)
-
+blockPlot = True
 # Coordinate space base ('cube')
 shape = 'cube'
 # Distance function ('L2', 'Bhattacharyya', 'Hellinger', 'KullbackLeibler', 'JensenShannon')
@@ -141,8 +141,6 @@ plotTimeStart = time.time()
 for distanceFunctionName in distanceFunctionNames:
     # Add new Subplot
     ax = fig.add_subplot(2, 2, currentSubplotIndex)
-    # Set title
-    ax.set_title(distanceFunctionName, fontsize=11)
     
     # Calculate distances
     calculationTimeStart = time.time()
@@ -166,6 +164,9 @@ for distanceFunctionName in distanceFunctionNames:
     plt.yticks(y_ticks_range, y_ticks, fontsize=8)
     
     ax.grid(True)
+    
+    # Set title
+    ax.set_title(distanceFunctionName, fontsize=11)
     
     # Increment index
     currentSubplotIndex = currentSubplotIndex + 1
