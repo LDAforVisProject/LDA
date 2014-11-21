@@ -49,6 +49,9 @@ def readCorpora():
 							''' 
 							keywords = re.sub('[;]', ' ', keywords)
 							keywords = re.sub('[\']', '', keywords)
+							# Remark: ['('], [')'] untested.
+							keywords = re.sub('[(]', '', keywords)
+							keywords = re.sub('[)]', '', keywords)
 							keywords = re.sub('[:|.|[|]|]', '', keywords)
 							keywords = re.sub('[0-9]+', '', keywords) #remove integers
 							#keywords = re.sub('[a-z]', '', keywords) #remove single chars

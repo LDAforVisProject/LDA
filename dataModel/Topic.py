@@ -8,6 +8,7 @@ import logging
 import math
 import operator
 import numpy as np
+import csv
 import matplotlib.pyplot as plt
 import powerlaw as powerlaw_dedicated
 from dataModel.ObjectWithDistanceFunction import ObjectWithDistanceFunction
@@ -24,6 +25,7 @@ class Topic(ObjectWithDistanceFunction):
         self._topicNumber           = topicNumber
         self._keywordProbabilityMap = dict()
         # To be initialized later
+        self._sortedTupleList       = None
         self._sortedKeywordList     = None
         self._sortedProbabilityList = None
  
@@ -53,9 +55,9 @@ class Topic(ObjectWithDistanceFunction):
     '''
     def createdSortedListOfTuples(self):
         # Necessary to keep sortedTupleList as a attribute?
-        sortedTupleList = sorted(self._keywordProbabilityMap.items(), key = operator.itemgetter(1), reverse=True)
-        self._sortedKeywordList = map(operator.itemgetter(0), sortedTupleList)
-        self._sortedProbabilityList = map(operator.itemgetter(1), sortedTupleList)
+        self._sortedTupleList = sorted(self._keywordProbabilityMap.items(), key = operator.itemgetter(1), reverse=True)
+        self._sortedKeywordList = map(operator.itemgetter(0), self._sortedTupleList)
+        self._sortedProbabilityList = map(operator.itemgetter(1), self._sortedTupleList)
         
         #print sortedTupleList[1000]
         #print self._sortedKeywordList[1000]
@@ -141,13 +143,14 @@ class Topic(ObjectWithDistanceFunction):
     Print n-th most relevant keywords for easy comparisons with other topics.
     @param n Number of keywords to be printed.
     '''
-#   def printLimitedKeywordList(self, n):
-#       n = n + 1
-
-       #for keyword, p in self._keywordProbabilityMap.iteritems():
-       #     result = result + "     " + keyword + "|" + str(p) + "\n" 
+    def printLimitedKeywordList(self, n):
+        result = ""
         
- 
+        for keyword, p in self._sortedTupleList[:n]:
+            result = result + "\t" + keyword + "|" + str(p) + "\n"
+            
+        return result
+    
     # ---------------------------------------
     # Distance functions
     
@@ -224,4 +227,51 @@ class Topic(ObjectWithDistanceFunction):
       
     # ---------------------------------------
     
-    # Analyze LDA function output files
+    '''
+    Open csv with LDA topics. Read into keyword probability maps (easier to compare / calculate distances).
+    @return: List of topics.
+    '''
+    @staticmethod
+    def generateTopicsFromFile(fileLocation, k, alignment = 'vertical'):
+        # Init container for k topics
+        topics = [Topic(x) for x in range(k)]
+        # i denotes number of row in csv (up to number of features)
+        i = 0
+        topicKeywords = []
+                
+        with open(fileLocation, 'rb') as topicfile:
+            topicInputData = csv.reader(topicfile, delimiter=' ', quotechar='|')
+            
+            if alignment == 'vertical':
+                # Alternative: with codecs.open('data/LDATopics.csv', 'rb', 'utf-8') as topicfile:
+                # Option: Try reading with unicodecsv.reader to avoid remaining charset-problem 
+                # Reminder: In used format, each column represents one topic
+                for row in topicInputData:
+                    if i > 0:
+                        topicKeywords = row[0].split(',')
+                        #print '\n----------------\nrow #' + str(i) + "\n----------------"
+                        
+                        # Insert data into maps.
+                        # inner_i denotes number of current topic this keyword/probability mapping is associated with,
+                        # i.e.: We read the ith-most important keyword for each topic (and write it in our map).
+                        inner_i = 0
+                        for keywordProbabilities in topicKeywords:
+                            inner_i = inner_i + topics[inner_i].addKeywordDataset(keywordProbabilities)
+                    i = i + 1
+                    topicKeywords = []
+            
+            elif alignment == 'horizontal':
+                for row in topicInputData:
+                    topicKeywords = row[0].split(',')
+                    
+                    for keywordProbabilities in topicKeywords:
+                        topics[i].addKeywordDataset(keywordProbabilities)
+                    
+                    i = i + 1
+                    topicKeywords = []
+
+        # Created sorted list representation of keyword/probability map
+        for topic in topics:
+            topic.createdSortedListOfTuples()
+                        
+        return topics

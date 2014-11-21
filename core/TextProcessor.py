@@ -49,13 +49,13 @@ def processText():
 	abstractTokens = [[stem(word, stemmer=LEMMA) for word in line.split()] for line in abstractList]
 	
 	"""Build dictionary and do dictionary pre-processing"""
-	print "Building dicitonary ..."
+	print "Building dictionary ..."
 	dictionary = corpora.Dictionary(abstractTokens)
 	#remove stop words and words that appear only once
-	stopwords = stopwords.words('english')
+	stopwordList = stopwords.words('english')
 	exclusionlist = ['-', 'se', 'h', 'd', 'iee', '+'] #manually populated; add to this if necessary
-	stopwords = stopwords + exclusionlist
-	stop_ids = [dictionary.token2id[stopword] for stopword in stopwords if stopword in dictionary.token2id]
+	stopwordList = stopwordList + exclusionlist
+	stop_ids = [dictionary.token2id[stopword] for stopword in stopwordList if stopword in dictionary.token2id]
 	once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq ==1]
 	dictionary.filter_tokens(stop_ids) #remove them from the dictionary "dictionary.filter_tokens(stop_ids + once_ids)"
 	dictionary.filter_tokens(once_ids) #remove terms that only occur once

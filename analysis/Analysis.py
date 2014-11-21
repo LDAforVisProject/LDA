@@ -10,71 +10,57 @@ distribution of probabilities, etc.).
 
 '''
 
-import os, csv
-import time
-from dataModel.Topic import *
+import numpy as np
+import operator
+from dataModel.Topic import Topic
+#import dataModel.Topic as Topic
 
-# Get file location
-__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-print __location__
-
-# Set up logger
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-# Model parameters
-k = 20
-
-# One map/dictionary for each topic: keyword -> probability for this topic
-keywordProbability_maps = [dict() for x in range(k)]
-
-# Init container for k topics
-topics = [Topic(x) for x in range(k)]
-
-# ---------------------------------------------------------------------------------------------------------------
-
-# Open csv with LDA topics. Read into keyword probability maps (easier to compare / calculate distances).
-#with codecs.open('data/LDATopics.csv', 'rb', 'utf-8') as topicfile:
-# Option: Try reading with unicodecsv.reader to avoid remaining charset-problem 
-with open('../data/LDATopics.csv', 'rb') as topicfile:
-    topicInputData = csv.reader(topicfile, delimiter=' ', quotechar='|')
-    # i denotes number of row in csv (up to number of features)
-    i = 0
-    topicKeywords = []
+class Analysis():
+    # Constructor
+    def __init__(self, __location__, logger):
+        # Set auxiliary variables
+        self.__location__ = __location__
+        self.logger = logger
     
-    # Reminder: In used format, each column represents one topic
-    for row in topicInputData:
-        if i > 0:
-            topicKeywords = row[0].split(',')
-            #print '\n----------------\nrow #' + str(i) + "\n----------------"
-            
-            # Insert data into maps.
-            # inner_i denotes number of current topic this keyword/probability mapping is associated with,
-            # i.e.: We read the ith-most important keyword for each topic (and write it in our map).
-            inner_i = 0
-            for keywordProbabilities in topicKeywords:
-                inner_i = inner_i + topics[inner_i].addKeywordDataset(keywordProbabilities)
-        i = i + 1
-        topicKeywords = []
+    '''
+    Currently compares alpha-sampled data only.
+    '''
+    def compareSampledData(self, fileList, k, alignment):
+        self.logger.info("Analyzing alpha-sampled topics.")
         
-# Created sorted list representation of keyword/probability map
-for topic in topics:
-    topic.createdSortedListOfTuples()
-    
-# ---------------------------------------------------------------------------------------------------------------
-
-#topics[0].plotKeywordProbabilities()
-    
-# Test: Compare two topics with...
-#    ...L2 distance/norm
-print "L2: " + str(topics[0].calculateL2Distance(topics[1]))
-#    ..Kullback-Leibler distance
-print "Kullback-Leibler: " + str(topics[0].calculateKullbackLeiblerDistance(topics[1]))
-#    ...Jensen-Shannon divergence
-print "Jensen-Shannon: " + str(topics[0].calculateJensenShannonDivergence(topics[1]))
-#    ...Bhattacharyya distance
-print "Bhattacharyya: " + str(topics[0].calculateBhattacharyyaDistance(topics[1]))
-#    ...Hellinger distance
-print "Hellinger: " + str(topics[0].calculateHellingerDistance(topics[1]))
-
-# Test distance calculation for two topics (here: between topic 1 and topic 2)
-#df.calculateDistance(keywordProbability_maps[0], keywordProbability_maps[1])
+        topicLists = dict()
+        # Generate topic from files produced by LDA.
+        for alpha, fileLocation in fileList.iteritems():
+            print alpha
+            print fileLocation
+            topicList = Topic.generateTopicsFromFile(fileLocation, k, alignment)
+            topicLists[alpha] = topicList
+            
+        sortedTopicLists = sorted(topicLists.items(), key = operator.itemgetter(0), reverse=True)
+                     
+        for topicIndex in np.arange(0, k):
+            print "Topic #" + str(topicIndex)
+            for item in sortedTopicLists:
+                print "    alpha = " + str(item[0])
+                print item[1][topicIndex].printLimitedKeywordList(5)
+        '''
+        for topicList, alpha in topicLists:
+            print "topicList #" + str(count)
+            for topic in topicList:
+                print topic.printLimitedKeywordList(5)
+            count = count + 1
+        #topics[0].plotKeywordProbabilities()
+        '''
+        '''   
+        # Test: Compare two topics with...
+        #    ...L2 distance/norm
+        print "L2: " + str(topics[0].calculateL2Distance(topics[1]))
+        #    ..Kullback-Leibler distance
+        print "Kullback-Leibler: " + str(topics[0].calculateKullbackLeiblerDistance(topics[1]))
+        #    ...Jensen-Shannon divergence
+        print "Jensen-Shannon: " + str(topics[0].calculateJensenShannonDivergence(topics[1]))
+        #    ...Bhattacharyya distance
+        print "Bhattacharyya: " + str(topics[0].calculateBhattacharyyaDistance(topics[1]))
+        #    ...Hellinger distance
+        print "Hellinger: " + str(topics[0].calculateHellingerDistance(topics[1]))
+        '''

@@ -39,52 +39,76 @@ def visualizeTopics(lda, k, numberOfTerms):
         print topicList_withProbabilities[:-2]
     """        
         
-#Write topics to CSV
-def writeTopics(outputfile, lda, k, numberOfTerms):
-    with open(outputfile, 'wb') as output:
-        topicList = []
-        i = 0
-        for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
-            subTopicList = []
-            i = i + 1
-            subTopicList.append("Topic " + str(i))
-            for p, word in topic:
-                subTopicList.append(word + '|' + str(p))
-            topicList.append(subTopicList)
-        
-        #transpose 2-d topic array; topics are now represented column-wise
-        topicListTransposed = [list(j) for j in zip(*topicList)] 
-        wunicode = unicodecsv.writer(output, encoding='utf-8')
-        errorIndex = 0
-        
-        #unicodeCSVWriter = UnicodeWriter(output)
-        #unicodeCSVWriter.writerows(topicListTransposed)
-        
-        for q in topicListTransposed:
-            try:
-                #w.writerow(qAlternative)
-                #csv_writer.writerow(q)
-                wunicode.writerow(q)
+'''
+Write topics to CSV
+'''
+def writeTopics(outputfile, lda, k, numberOfTerms, alignment='vertical'):
+    if alignment == 'vertical':
+        with open(outputfile, 'wb') as output:
+            topicList = []
+            i = 0
+            for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
+                subTopicList = []
+                i = i + 1
+                subTopicList.append("Topic " + str(i))
+                for p, word in topic:
+                    subTopicList.append(word + '|' + str(p))
+                topicList.append(subTopicList)
+            
+            #transpose 2-d topic array; topics are now represented column-wise
+            topicListTransposed = [list(j) for j in zip(*topicList)] 
+            wunicode = unicodecsv.writer(output, encoding='utf-8')
+            errorIndex = 0
+            
+            #unicodeCSVWriter = UnicodeWriter(output)
+            #unicodeCSVWriter.writerows(topicListTransposed)
+            
+            for q in topicListTransposed:
+                try:
+                    #w.writerow(qAlternative)
+                    #csv_writer.writerow(q)
+                    wunicode.writerow(q)
+                    
+                except UnicodeEncodeError as e:
+                    errorIndex = errorIndex + 1
+                    print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
+                    print e
+                    
+    elif alignment == 'horizontal':
+        with open(outputfile, 'wb') as output:
+            wunicode = unicodecsv.writer(output, encoding='utf-8')
+            
+            i = 0
+            errorIndex = 0
+            
+            for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
+                elementList = []
+                i = i + 1
+                for p, word in topic:
+                    elementList.append(word + '|' + str(p))
                 
-            except UnicodeEncodeError as e:
-                errorIndex = errorIndex + 1
-                print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
-                print e
+                try:
+                    #w.writerow(qAlternative)
+                    #csv_writer.writerow(q)
+                    wunicode.writerow(elementList)
+                    
+                except UnicodeEncodeError as e:
+                    errorIndex = errorIndex + 1
+                    print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
+                    print e            
 
 '''
 Executes gensim's LDA with given arguments.
 @return: Generated LDA object. 
 '''
-def executeLDA(k, alpha, passes, outputSuffix, writeToFile = False):
+def executeLDA(k, alpha, passes, relativeLocation, writeToFile = False):
     # Filepath variables
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    outputfile = os.path.join(__location__, 'data/LDATopics_' + outputSuffix + '.csv')
     
     #load id2word Dictionary
     dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
     #load Corpus iterator
     mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
-    #print mm
     
     nOfTerms = len(dictionary)
     
@@ -97,6 +121,7 @@ def executeLDA(k, alpha, passes, outputSuffix, writeToFile = False):
         #Visualize Topics
         #visualizeTopics(lda, k, nOfTerms)
         #Save topics to csv
-        writeTopics(outputfile, lda, k, nOfTerms)
+        fileLocation = os.path.join(__location__, relativeLocation)
+        writeTopics(fileLocation, lda, k, nOfTerms, 'horizontal')
         
     return lda
