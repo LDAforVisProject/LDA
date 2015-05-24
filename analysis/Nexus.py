@@ -7,14 +7,12 @@ Created on 19.11.2014
 import os, csv
 import sys
 import logging
-from utils import Utils
+import utils.Utils as Utils
 import utils.Configuration as Configuration
-import core.CorporaReader as CorporaReader
-import core.TextProcessor as TextProcessor
 import core.ParametrizedLDA as ParametrizedLDA
-#import analysis.Analysis as Analysis
-from Analysis import Analysis
-from dataModel.Topic import Topic
+import core.TextProcessor as TextProcessor
+import core.CorporaReader as CorporaReader
+
 
 # Set maximal CSV field size
 csv.field_size_limit(sys.maxsize)
@@ -33,10 +31,10 @@ configuration = Configuration.Configuration()
 configuration.parseOptions()
 
 # Set configuration options manually for test purposes.
-configuration.mode = "sample"
-configuration.k = 20
-configuration.passes = 10
-configuration.useExistingData = True
+configuration.mode              = "sample"
+configuration.k                 = 20
+configuration.passes            = 1
+configuration.useExistingData   = False
 
 ''' 
 # Test reading of file with horizontal data alignment.
@@ -55,24 +53,32 @@ for topic in topicList:
 if configuration.mode == "sample":
     logger.info("Sampling alpha values.\n")
     
-    alphaValues = [0.1, 0.5, 1, 5, 10]
-    fileLocations = dict()
+    alphaValues     = [0.1, 0.5, 1, 5, 10]
+    etaValues       = [0.1, 0.5, 1, 5, 10]
+    fileLocations   = dict()
     
-    for alpha in alphaValues:
-        relativeLocation = 'data/sampling/LDATopics_alpha' + str(alpha) + '.csv'
-        # Save location of result file
-        fileLocations[alpha] = os.path.abspath(os.path.join(__location__, os.pardir, 'core/' + relativeLocation))
+    relativeLocationPrefix = 'data/sampling/LDATopics';
+    
+    for eta in etaValues:
+        configuration.eta   = eta;
         
-        if (configuration.useExistingData == False):
-            logger.info("Applying LDA with alpha = " + str(alpha))
-            ParametrizedLDA.executeLDA(configuration.k, alpha, configuration.passes, relativeLocation, True)
-        else:
-            logger.info("Using existing data for alpha = " + str(alpha))
+        for alpha in alphaValues:
+            relativeLocation    = relativeLocationPrefix + '_eta' + str(eta) + '_alpha' + str(alpha) + '.csv'
+            configuration.alpha =  alpha;
             
-    sampleAnalysis = Analysis(__location__, logger)
-    sampleAnalysis.compareSampledData(fileLocations, configuration.k, 'horizontal')
+            # Save location of result file
+            fileLocations[alpha] = os.path.abspath(os.path.join(__location__, os.pardir, 'core/' + relativeLocation))
+            
+            if (configuration.useExistingData == False):
+                logger.info("Applying LDA with eta = " + str(eta) + ", alpha = " + str(alpha))
+                ParametrizedLDA.executeLDA(configuration, relativeLocation, True)
+            else:
+                logger.info("Using existing data for eta = " + str(eta) + ", alpha = " + str(alpha))
+                
+        #sampleAnalysis = Analysis(__location__, logger)
+        #sampleAnalysis.compareSampledData(fileLocations, configuration.k, 'horizontal')
         
 elif configuration.mode == "pre":
     logger.info("Preprocessing data.\n")
-    #CorporaReader.readCorpora()
-    #TextProcessor.processText()
+    CorporaReader.readCorpora()
+    TextProcessor.processText()

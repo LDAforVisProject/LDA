@@ -14,4 +14,3 @@ def initLogging():
     logger = logging.getLogger(__name__)
     
     return logger
-

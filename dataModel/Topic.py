@@ -13,11 +13,10 @@ import matplotlib.pyplot as plt
 import powerlaw as powerlaw_dedicated
 from dataModel.ObjectWithDistanceFunction import ObjectWithDistanceFunction
 
+'''
+Class for topic data and corresponding methods.
+'''
 class Topic(ObjectWithDistanceFunction):
-    '''
-    Class for topic data and corresponding methods.
-    '''
-    
     # Constructor
     def __init__(self, topicNumber):
         # Data

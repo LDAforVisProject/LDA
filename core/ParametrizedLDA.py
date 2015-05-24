@@ -42,12 +42,12 @@ def visualizeTopics(lda, k, numberOfTerms):
 '''
 Write topics to CSV
 '''
-def writeTopics(outputfile, lda, k, numberOfTerms, alignment='vertical'):
+def writeTopics(outputfile, lda, configuration, numberOfTerms, alignment='vertical'):
     if alignment == 'vertical':
         with open(outputfile, 'wb') as output:
             topicList = []
             i = 0
-            for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
+            for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
                 subTopicList = []
                 i = i + 1
                 subTopicList.append("Topic " + str(i))
@@ -81,12 +81,18 @@ def writeTopics(outputfile, lda, k, numberOfTerms, alignment='vertical'):
             i = 0
             errorIndex = 0
             
-            for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
+            # Write configuration string to file.
+            configStrings = []
+            configStrings.append(configuration.toString())
+            wunicode.writerow(configStrings);
+            
+            for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
                 elementList = []
                 i = i + 1
                 for p, word in topic:
                     elementList.append(word + '|' + str(p))
                 
+                # Write line to file.
                 try:
                     #w.writerow(qAlternative)
                     #csv_writer.writerow(q)
@@ -101,27 +107,27 @@ def writeTopics(outputfile, lda, k, numberOfTerms, alignment='vertical'):
 Executes gensim's LDA with given arguments.
 @return: Generated LDA object. 
 '''
-def executeLDA(k, alpha, passes, relativeLocation, writeToFile = False):
+def executeLDA(configuration, relativeLocation, writeToFile = False):
     # Filepath variables
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     
-    #load id2word Dictionary
-    dictionary = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
-    #load Corpus iterator
-    mm = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
-    
-    nOfTerms = len(dictionary)
+    # Load id2word Dictionary
+    dictionary  = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
+    # Load Corpus iterator
+    mm          = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
     
     # Train LDA model
-    lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=k, 
-        update_every=5, chunksize=100, passes=passes)
+    lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
+                                   chunksize=configuration.chunksize, passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
     
     if writeToFile == True:
+        nOfTerms = len(dictionary)
         #print ""
         #Visualize Topics
         #visualizeTopics(lda, k, nOfTerms)
         #Save topics to csv
         fileLocation = os.path.join(__location__, relativeLocation)
-        writeTopics(fileLocation, lda, k, nOfTerms, 'horizontal')
+        # Use horizontal topic/keyword alignment as default value.
+        writeTopics(fileLocation, lda, configuration, nOfTerms, 'horizontal')
         
     return lda
