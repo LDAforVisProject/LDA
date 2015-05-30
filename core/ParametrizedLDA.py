@@ -107,7 +107,7 @@ def writeTopics(outputfile, lda, configuration, numberOfTerms, alignment='vertic
 Executes gensim's LDA with given arguments.
 @return: Generated LDA object. 
 '''
-def executeLDA(configuration, relativeLocation, writeToFile = False):
+def executeLDA(configuration, location, pathMode, writeToFile = False):
     # Filepath variables
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     
@@ -118,7 +118,7 @@ def executeLDA(configuration, relativeLocation, writeToFile = False):
     
     # Train LDA model
     lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
-                                   chunksize=configuration.chunksize, passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
+                                   passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
     
     if writeToFile == True:
         nOfTerms = len(dictionary)
@@ -126,7 +126,11 @@ def executeLDA(configuration, relativeLocation, writeToFile = False):
         #Visualize Topics
         #visualizeTopics(lda, k, nOfTerms)
         #Save topics to csv
-        fileLocation = os.path.join(__location__, relativeLocation)
+        if pathMode == "relative":
+            fileLocation = os.path.join(__location__, location)
+        elif pathMode == "absolute":
+            fileLocation = location
+            
         # Use horizontal topic/keyword alignment as default value.
         writeTopics(fileLocation, lda, configuration, nOfTerms, 'horizontal')
         
