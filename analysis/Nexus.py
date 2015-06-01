@@ -7,12 +7,26 @@ Created on 19.11.2014
 import os, csv
 import sys
 import logging
-import utils.Utils as Utils
-import utils.Configuration as Configuration
-import utils.SimplifiedConfiguration as SimplifiedConfiguration
-import core.ParametrizedLDA as ParametrizedLDA
-import core.TextProcessor as TextProcessor
-import core.CorporaReader as CorporaReader
+
+# Add paths to libraries (needed for pyinstall.py to work properly).    
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append("D:\Programme\Python27\DLLs")
+sys.path.append("D:\Programme\Python27\Lib")
+sys.path.append("D:\Programme\Python27\Lib\multiprocessing")
+sys.path.append("D:\Programme\Python27\Lib\site-packages")
+sys.path.append("D:\Programme\Python27\Lib\site-packages\gensim-0.10.0-py2.7.egg")
+sys.path.append("D:\Programme\Python27\Lib\site-packages\six-1.7.3-py2.7.egg")
+sys.path.append("D:\Workspace\Eclipse\VKA_TopicMining\pattern-2.6")
+sys.path.append("D:\Workspace\Eclipse\VKA_TopicMining\python-unicodecsv-0.9.4")
+
+#from utils import Utils
+from utils import SimplifiedConfiguration
+from core import ParametrizedLDA
+from core import CorporaReader
+from core import TextProcessor
+
+#import core.TextProcessor as TextProcessor
+#import core.CorporaReader as CorporaReader
 
 
 # Set maximal CSV field size
@@ -24,10 +38,13 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 print __location__
 
 # Get logger
-logger = Utils.initLogging()
+#logger = Utils.initLogging()
+# Set up logger
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Parse arguments
-configuration = SimplifiedConfiguration.SimplifiedConfiguration()
+configuration = SimplifiedConfiguration()
 configuration.parseOptions()
 
 # Set configuration options manually for test purposes.
@@ -39,19 +56,6 @@ logger.info(configuration.passes)
 logger.info(configuration.inputPath)
 logger.info(configuration.outputPath)
 
-''' 
-# Test reading of file with horizontal data alignment.
-relativeLocation = 'data/sampling/LDATopics_test.csv'
-#ParametrizedLDA.executeLDA(configuration.k, 1, configuration.passes, relativeLocation, True)
-topicList = Topic.generateTopicsFromFile(os.path.abspath(os.path.join(__location__, os.pardir, 'core/' + relativeLocation)), configuration.k, 'horizontal')
-
-
-for topic in topicList:
-    for keyword, p in topic._sortedTupleList[:5]:
-        print keyword + "|" + str(p)
-    print '\n'
-'''
-        
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":

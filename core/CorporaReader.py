@@ -18,7 +18,7 @@ Writes abstract to abstracts.txt
 
 import os, csv, re
 import time
-from utils.unicodeHandling.UnicodeCSVHandler import *
+#from utils.unicodeHandling.UnicodeCSVHandler import *
 
 def readCorpora():
 	# Filepath variable

@@ -4,10 +4,9 @@ Created on 19.11.2014
 @author: RM
 '''
 
-import logging
 import unicodecsv
 from gensim import corpora, models
-import os, csv
+import os
 
 #Method to print the k-most-likely terms for all found topics in a 
 #more reader-friendly method

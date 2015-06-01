@@ -1,0 +1,9 @@
+('D:\\Workspace\\LDA\\exporter\\dist\\Nexus.exe',
+ True,
+ False,
+ None,
+ None,
+ [],
+ None,
+ False,
+ 1433157146L)

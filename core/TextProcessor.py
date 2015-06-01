@@ -18,14 +18,14 @@ Pre-processing steps:
 	- remove single orccurence terms (singletons)
 '''
 
-import logging 
-
+import logging
 import os
+import sys
+
 from gensim import corpora, models
 from nltk.corpus import stopwords
 from pattern.vector import stem, LEMMA
 
-		
 def processText():
 	# Configure logging
 	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
