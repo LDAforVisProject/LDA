@@ -8,16 +8,19 @@ import os, csv
 import sys
 import logging
 
-# Add paths to libraries (needed for pyinstall.py to work properly).    
+# Add paths to libraries (needed for pyinstall.py to work properly).
+python_path      = "D:\Programme\Python27\\"
+dependency_path  = "D:\Workspace\Eclipse\VKA_TopicMining\\"
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append("D:\Programme\Python27\DLLs")
-sys.path.append("D:\Programme\Python27\Lib")
-sys.path.append("D:\Programme\Python27\Lib\multiprocessing")
-sys.path.append("D:\Programme\Python27\Lib\site-packages")
-sys.path.append("D:\Programme\Python27\Lib\site-packages\gensim-0.10.0-py2.7.egg")
-sys.path.append("D:\Programme\Python27\Lib\site-packages\six-1.7.3-py2.7.egg")
-sys.path.append("D:\Workspace\Eclipse\VKA_TopicMining\pattern-2.6")
-sys.path.append("D:\Workspace\Eclipse\VKA_TopicMining\python-unicodecsv-0.9.4")
+sys.path.append(python_path + "DLLs")
+sys.path.append(python_path + "Lib")
+sys.path.append(python_path + "Lib\multiprocessing")
+sys.path.append(python_path + "Lib\site-packages")
+sys.path.append(python_path + "Lib\site-packages\gensim-0.10.0-py2.7.egg")
+sys.path.append(python_path + "Lib\site-packages\six-1.7.3-py2.7.egg")
+sys.path.append(dependency_path + "pattern-2.6")
+sys.path.append(dependency_path + "python-unicodecsv-0.9.4")
 
 #from utils import Utils
 from utils import SimplifiedConfiguration
@@ -55,7 +58,6 @@ logger.info(configuration.mode)
 logger.info(configuration.passes)
 logger.info(configuration.inputPath)
 logger.info(configuration.outputPath)
-
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
