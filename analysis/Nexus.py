@@ -38,13 +38,13 @@ csv.field_size_limit(sys.maxsize)
 # --------------------------------
 # Get file location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-print __location__
 
 # Get logger
 #logger = Utils.initLogging()
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+logging.disable(logging.CRITICAL)
 
 # Parse arguments
 configuration = SimplifiedConfiguration()
