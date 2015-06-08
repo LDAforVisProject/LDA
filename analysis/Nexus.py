@@ -7,6 +7,7 @@ Created on 19.11.2014
 import os, csv
 import sys
 import logging
+import hashlib
 
 # Add paths to libraries (needed for pyinstall.py to work properly).
 python_path      = "D:\Programme\Python27\\"
@@ -78,7 +79,8 @@ if configuration.mode == "sample":
             configuration.eta   = float(str.split(parameters[2], '=')[1])
             
             # Determine file name.
-            location = configuration.outputPath + '\\' + str(index) + '.csv'
+            filename = (hashlib.sha1(configuration.toString().encode())).hexdigest()
+            location = configuration.outputPath + '\\' + filename + '.csv'
             
             ParametrizedLDA.executeLDA(configuration, location, "absolute", True)
             
