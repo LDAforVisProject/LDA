@@ -37,15 +37,14 @@ from core import TextProcessor
 csv.field_size_limit(sys.maxsize)
 
 # --------------------------------
+
 # Get file location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-# Get logger
-#logger = Utils.initLogging()
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-logging.disable(logging.CRITICAL)
+#logging.disable(logging.CRITICAL)
 
 # Parse arguments
 configuration = SimplifiedConfiguration()
@@ -60,8 +59,9 @@ logger.info(configuration.passes)
 logger.info(configuration.inputPath)
 logger.info(configuration.outputPath)
 
+    
 # Determine mode, start corresponding tasks.
-if configuration.mode == "sample":
+if True and configuration.mode == "sample":
     logger.info("Sampling values as listed in " + configuration.inputPath + ".\n")
     
     # Read input file.

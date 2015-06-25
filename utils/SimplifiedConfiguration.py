@@ -17,6 +17,7 @@ class SimplifiedConfiguration():
         self.optionParser   = OptionParser()
         self.mode           = ""
         self.passes         = 0;
+        self.dbPath         = "";
         self.inputPath      = "";
         self.outputPath     = "";
         
@@ -44,6 +45,7 @@ class SimplifiedConfiguration():
         self.passes             = options.passes
         self.inputPath          = options.inputPath
         self.outputPath         = options.outputPath
+        self.dbPath             = options.outputPath + "\\workspace.db"
         
     def toString(self):
         # For now: Consider only k, eta and alpha.

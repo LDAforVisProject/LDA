@@ -59,7 +59,7 @@ def readCorpora():
 						if (abstract != "Abstract" and len(abstract) > 0): 
 							abstract = abstract.lower() #convert to lowercase
 							#Using RegEx to clean up the data
-							abstract = re.sub('[;|,|:|.|?|!|(|)|]', '', abstract)
+							abstract = re.sub('[;|,|:|.|?|!|(|)|\'|"]', '', abstract)
 							abstract = abstract + ' ' + keywords #concatenate abstracts and keywords)
 							abstractList.append(abstract)
 						

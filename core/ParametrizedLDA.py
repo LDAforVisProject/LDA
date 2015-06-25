@@ -7,6 +7,8 @@ Created on 19.11.2014
 import unicodecsv
 from gensim import corpora, models
 import os
+import sqlite3
+import logging
 
 #Method to print the k-most-likely terms for all found topics in a 
 #more reader-friendly method
@@ -41,66 +43,119 @@ def visualizeTopics(lda, k, numberOfTerms):
 '''
 Write topics to CSV
 '''
-def writeTopics(outputfile, lda, configuration, numberOfTerms, alignment='vertical'):
-    if alignment == 'vertical':
-        with open(outputfile, 'wb') as output:
-            topicList = []
-            i = 0
-            for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
-                subTopicList = []
-                i = i + 1
-                subTopicList.append("Topic " + str(i))
-                for p, word in topic:
-                    subTopicList.append(word + '|' + str(p))
-                topicList.append(subTopicList)
+def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical'):
+    
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    
+    errorCount = 0
+    
+    ldaConfigID = -1
+    try:
+        # Write LDA configuration to file.
+        ldaValues = []
+        
+        ldaValues.append(configuration.alpha)
+        ldaValues.append(configuration.k)
+        ldaValues.append(configuration.eta)
+
+        dbConn.execute("insert into ldaConfigurations (alpha, kappa, eta) VALUES (?, ?, ?)", ldaValues)
+        # Commit query. 
+        dbConn.commit()
+        
+    except:
+        errorCount = errorCount + 1 #logger.info("ERROR")
+    
+    # Get ldaConfigID.
+    for res in dbConn.execute(  "select ldaConfigurationID from ldaConfigurations " + 
+                                "where alpha = ? and kappa = ? and eta = ?", ldaValues):
+        ldaConfigID = res[0]
             
-            #transpose 2-d topic array; topics are now represented column-wise
-            topicListTransposed = [list(j) for j in zip(*topicList)] 
-            wunicode = unicodecsv.writer(output, encoding='utf-8')
-            errorIndex = 0
+    i = 0
+    # Write topics into db.
+    for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
+        try:
+            # Write topic data into DB.    
+            topicValues = []
             
-            #unicodeCSVWriter = UnicodeWriter(output)
-            #unicodeCSVWriter.writerows(topicListTransposed)
+            topicValues.append(i)
+            topicValues.append(ldaConfigID)
+
+            dbConn.execute("insert into topics (topicID, ldaConfigurationID) VALUES (?, ?)", topicValues)
             
-            for q in topicListTransposed:
-                try:
-                    #w.writerow(qAlternative)
-                    #csv_writer.writerow(q)
-                    wunicode.writerow(q)
-                    
-                except UnicodeEncodeError as e:
-                    errorIndex = errorIndex + 1
-                    print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
-                    print e
-                    
-    elif alignment == 'horizontal':
-        with open(outputfile, 'wb') as output:
-            wunicode = unicodecsv.writer(output, encoding='utf-8')
+        except:
+            errorCount = errorCount + 1 #logger.info("ERROR / topic")
             
-            i = 0
-            errorIndex = 0
-            
-            # Write configuration string to file.
-            configStrings = []
-            configStrings.append(configuration.toString())
-            wunicode.writerow(configStrings);
-            
-            for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
-                elementList = []
-                i = i + 1
-                for p, word in topic:
-                    elementList.append(word + '|' + str(p))
+        keywordInTopicData = []
+        for p, word in topic:
+            keywordID = -1
+            # Get ID for this keyword.
+            try:
+                request = "select keywordID from keywords " + "where keyword = '" + word + "'"
+                #for res in dbConn.execute(  "select keywordID from keywords " + 
+                #                            "where keyword = '?'", word):
+                for res in dbConn.execute(request):
+                    keywordID = int(res[0])
                 
-                # Write line to file.
-                try:
-                    #w.writerow(qAlternative)
-                    #csv_writer.writerow(q)
-                    wunicode.writerow(elementList)
+            except:
+                errorCount = errorCount + 1 #logger.info("ERROR / keyword not found (probably has ' or \" in it).")
+            
+            finally:
+                if (keywordID != -1):
+                    #currValues.append(keywordID)
+                    #currValues.append(p)
+                    #currValues.append(ldaConfigID)
+                    keywordInTopicData.append((i, keywordID, p, ldaConfigID))
                     
-                except UnicodeEncodeError as e:
-                    errorIndex = errorIndex + 1
-                    print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
-                    print e            
+        # Increment topic counter.
+        i = i + 1
+        
+        # Write batch of topic -> keyword/probability data to database.
+        #'''
+        try:
+            dbConn.executemany('insert into keywordInTopic VALUES (?, ?, ?, ?)', keywordInTopicData)
+        except:
+            print keywordInTopicData
+            
+        dbConn.commit()
+        #'''
+        
+    dbConn.close()
+
+def writeTopicsToCSVFiles(outputfile, lda, configuration, numberOfTerms, alignment='vertical'):
+
+    # Output to file:
+    with open(outputfile, 'wb') as output:
+        wunicode = unicodecsv.writer(output, encoding='utf-8')
+        
+        i = 0
+        errorIndex = 0
+        
+        # Write configuration string to file.
+        configStrings = []
+        configStrings.append(configuration.toString())
+        wunicode.writerow(configStrings);
+        
+        for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
+                
+            elementList = []
+            i = i + 1
+            
+            for p, word in topic:
+                elementList.append(word + '|' + str(p))
+            
+            # Write line to file.
+            try:
+                #w.writerow(qAlternative)
+                #csv_writer.writerow(q)
+                wunicode.writerow(elementList)
+                
+            except UnicodeEncodeError as e:
+                errorIndex = errorIndex + 1
+                print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
+                print e
+
+
 
 '''
 Executes gensim's LDA with given arguments.
@@ -131,6 +186,6 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
             fileLocation = location
             
         # Use horizontal topic/keyword alignment as default value.
-        writeTopics(fileLocation, lda, configuration, nOfTerms, 'horizontal')
-        
+        writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, nOfTerms, 'horizontal')
+        #writeTopicsToCSVFiles(fileLocation, lda, configuration, nOfTerms, 'horizontal')
     return lda
