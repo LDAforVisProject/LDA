@@ -8,37 +8,7 @@ import unicodecsv
 from gensim import corpora, models
 import os
 import sqlite3
-import logging
-
-#Method to print the k-most-likely terms for all found topics in a 
-#more reader-friendly method
-def visualizeTopics(lda, k, numberOfTerms):
-    i = 0
-    topicList = ''
-    topicList_withProbabilities = ''
-    topicListCollection_withProbabilities = []
-    
-    for topic in lda.show_topics(topics=k, formatted=False, topn=numberOfTerms):
-        i = i + 1
-        print "Topic #" + str(i) + ": ",
-        
-        for p, word in topic:
-            topicList = topicList + word + ', '
-            topicList_withProbabilities = topicList_withProbabilities + word + '|' + str(p) + ', '
-
-        print topicList[:-2]
-        
-        topicListCollection_withProbabilities.append(topicList_withProbabilities)
-        topicList = ''
-        topicList_withProbabilities = ''
-
-    """    
-    i = 0
-    for topicList_withProbabilities in topicListCollection_withProbabilities:
-        i = i + 1
-        print "Topic #" + str(i) + ": ",
-        print topicList_withProbabilities[:-2]
-    """        
+import logging   
         
 '''
 Write topics to CSV
@@ -48,9 +18,15 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     
-    errorCount = 0
-    
+    errorCount  = 0
     ldaConfigID = -1
+    
+    # Get keyword IDs.
+    keywordIDs  = dict()
+    request     = "select * from keywords";
+    for res in dbConn.execute(request):
+        keywordIDs[res[1]] = int(res[0])
+     
     try:
         # Write LDA configuration to file.
         ldaValues = []
@@ -70,43 +46,38 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
     for res in dbConn.execute(  "select ldaConfigurationID from ldaConfigurations " + 
                                 "where alpha = ? and kappa = ? and eta = ?", ldaValues):
         ldaConfigID = res[0]
-            
-    i = 0
-    # Write topics into db.
-    for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
-        try:
-            # Write topic data into DB.    
-            topicValues = []
-            
-            topicValues.append(i)
-            topicValues.append(ldaConfigID)
+    
 
-            dbConn.execute("insert into topics (topicID, ldaConfigurationID) VALUES (?, ?)", topicValues)
-            
-        except:
-            errorCount = errorCount + 1 #logger.info("ERROR / topic")
-            
-        keywordInTopicData = []
+    # Store topic values.
+    topicData           = []
+    # Store keywordInTopic data.
+    keywordInTopicData  = []
+         
+    # Get topics.
+    topics = lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms)     
+    
+    i = 0
+    # Pack topics into list.
+    for topic in topics:
+        topicData.append((i, ldaConfigID))
+        # Increment topic counter.
+        i = i + 1
+    # Write topic list into DB.
+    try:
+        dbConn.executemany("insert into topics (topicID, ldaConfigurationID) VALUES (?, ?)", topicData)
+    except IOError as error:
+        print error
+        
+    i = 0
+    # Write keyword in topic data into db.
+    for topic in topics:
         for p, word in topic:
-            keywordID = -1
             # Get ID for this keyword.
-            try:
-                request = "select keywordID from keywords " + "where keyword = '" + word + "'"
-                #for res in dbConn.execute(  "select keywordID from keywords " + 
-                #                            "where keyword = '?'", word):
-                for res in dbConn.execute(request):
-                    keywordID = int(res[0])
-                
-            except:
+            if word in keywordIDs:
+                keywordInTopicData.append((i, keywordIDs[word], p, ldaConfigID))
+            else:
                 errorCount = errorCount + 1 #logger.info("ERROR / keyword not found (probably has ' or \" in it).")
-            
-            finally:
-                if (keywordID != -1):
-                    #currValues.append(keywordID)
-                    #currValues.append(p)
-                    #currValues.append(ldaConfigID)
-                    keywordInTopicData.append((i, keywordID, p, ldaConfigID))
-                    
+        
         # Increment topic counter.
         i = i + 1
         
@@ -114,12 +85,18 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
         #'''
         try:
             dbConn.executemany('insert into keywordInTopic VALUES (?, ?, ?, ?)', keywordInTopicData)
-        except:
-            print keywordInTopicData
-            
-        dbConn.commit()
-        #'''
-        
+            # Clear topic data array.
+            #logger.critical("in writetopics - kit batch: " + str(i) + ", .len = " + str(len(keywordInTopicData)))
+            keywordInTopicData = []
+        except IOError as error:
+            print error
+    
+    # Commit changes.
+    dbConn.commit()
+    
+    # Output LDA configuration.
+    logger.critical(configuration.toString())
+    
     dbConn.close()
 
 def writeTopicsToCSVFiles(outputfile, lda, configuration, numberOfTerms, alignment='vertical'):
@@ -162,6 +139,9 @@ Executes gensim's LDA with given arguments.
 @return: Generated LDA object. 
 '''
 def executeLDA(configuration, location, pathMode, writeToFile = False):
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    
     # Filepath variables
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     
@@ -184,8 +164,8 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
             fileLocation = os.path.join(__location__, location)
         elif pathMode == "absolute":
             fileLocation = location
-            
+    
         # Use horizontal topic/keyword alignment as default value.
         writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, nOfTerms, 'horizontal')
-        #writeTopicsToCSVFiles(fileLocation, lda, configuration, nOfTerms, 'horizontal')
+    
     return lda

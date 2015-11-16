@@ -44,7 +44,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-#logging.disable(logging.CRITICAL)
+#logging.disable(logging.critical)
+
 
 # Parse arguments
 configuration = SimplifiedConfiguration()
@@ -56,10 +57,12 @@ configuration.parseOptions()
 
 logger.info(configuration.mode)
 logger.info(configuration.passes)
+logger.info(configuration.update_every)
 logger.info(configuration.inputPath)
 logger.info(configuration.outputPath)
+logger.info(configuration.outputPath)
+logger.info(configuration.dbPath)
 
-    
 # Determine mode, start corresponding tasks.
 if True and configuration.mode == "sample":
     logger.info("Sampling values as listed in " + configuration.inputPath + ".\n")
@@ -86,33 +89,6 @@ if True and configuration.mode == "sample":
             
             # Increment file index.
             index += 1
-            
-    '''
-    alphaValues     = [0.1, 0.5, 1, 5, 10]
-    etaValues       = [0.1, 0.5, 1, 5, 10]
-    fileLocations   = dict()
-    
-    relativeLocationPrefix = 'data/sampling/LDATopics';
-    
-    for eta in etaValues:
-        configuration.eta   = eta;
-        
-        for alpha in alphaValues:
-            relativeLocation    = relativeLocationPrefix + '_eta' + str(eta) + '_alpha' + str(alpha) + '.csv'
-            configuration.alpha =  alpha;
-            
-            # Save location of result file
-            fileLocations[alpha] = os.path.abspath(os.path.join(__location__, os.pardir, 'core/' + relativeLocation))
-            
-            if (configuration.useExistingData == False):
-                logger.info("Applying LDA with eta = " + str(eta) + ", alpha = " + str(alpha))
-                ParametrizedLDA.executeLDA(configuration, relativeLocation, True)
-            else:
-                logger.info("Using existing data for eta = " + str(eta) + ", alpha = " + str(alpha))
-                
-        #sampleAnalysis = Analysis(__location__, logger)
-        #sampleAnalysis.compareSampledData(fileLocations, configuration.k, 'horizontal')
-    '''
         
 elif configuration.mode == "pre":
     logger.info("Preprocessing data.\n")
