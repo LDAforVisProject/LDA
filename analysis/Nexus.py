@@ -28,10 +28,8 @@ from utils import SimplifiedConfiguration
 from core import ParametrizedLDA
 from core import CorporaReader
 from core import TextProcessor
-
-#import core.TextProcessor as TextProcessor
-#import core.CorporaReader as CorporaReader
-
+from gensim import corpora
+import sqlite3
 
 # Set maximal CSV field size
 csv.field_size_limit(sys.maxsize)
@@ -42,18 +40,13 @@ csv.field_size_limit(sys.maxsize)
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 # Set up logger
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 #logging.disable(logging.critical)
-
 
 # Parse arguments
 configuration = SimplifiedConfiguration()
 configuration.parseOptions()
-
-# Set configuration options manually for test purposes.
-#configuration.mode              = "sample"
-#configuration.passes            = 1
 
 logger.info(configuration.mode)
 logger.info(configuration.passes)
@@ -63,8 +56,11 @@ logger.info(configuration.outputPath)
 logger.info(configuration.outputPath)
 logger.info(configuration.dbPath)
 
+#configuration.mode          = "importKeywords"
+#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_newKW.db"
+
 # Determine mode, start corresponding tasks.
-if True and configuration.mode == "sample":
+if configuration.mode == "sample":
     logger.info("Sampling values as listed in " + configuration.inputPath + ".\n")
     
     # Read input file.
@@ -94,3 +90,22 @@ elif configuration.mode == "pre":
     logger.info("Preprocessing data.\n")
     CorporaReader.readCorpora()
     TextProcessor.processText()
+    
+elif configuration.mode == "importKeywords":
+    logger.info("Importing keywords.\n")
+    
+    # Connect to DB.
+    dbConn          = sqlite3.connect(configuration.dbPath)
+    # Load dictionary.
+    dictionary      = corpora.Dictionary.load(os.path.join(__location__ + "\\..\\core\\", 'data/KeyVis.dict'))
+    # Initialize container for new keywords.
+    wordsToInsert   = []
+    
+    # Loop through all words in dictionary.
+    for id, word in dictionary.items():
+        #print word
+        wordsToInsert.append( (word,) )   
+    # Commit changes to DB.
+    dbConn.executemany("insert into keywords (keyword) VALUES (?)", wordsToInsert)
+    # Commit query. 
+    dbConn.commit()

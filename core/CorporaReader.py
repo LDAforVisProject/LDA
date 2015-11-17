@@ -83,64 +83,66 @@ def readCorpora():
 				keywordDict[term] = termLength #store term it's length in a dictionary 
 	print "Finished building keyword dictionary with %i terms!" % len(keywordDict.keys())
 	
-	
-	"""(3) Join any multi-word keywords that are also in the abstractList"""
-	#sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
-	#print "Joining multi-word terms (this takes a few minutes) ..."
-	#start = time.time()
-	
 	"""(3) Join any multi-word keywords that are also in the abstractList"""
 	sortedList = sorted(keywordDict, key=keywordDict.get, reverse=True)
 	print "Joining multi-word terms (this takes a few minutes) ..."
 	start = time.time()
 	#TODO: find a faster method to do this
 	#start replacment process with longest multi-word terms 
-	newAbstractList = []
-	for abstract in abstractList:
-		for keyword in sortedList:
-			tokenlist = keyword.split()
-			joinedKeyword = '_'.join(tokenlist)
-			if (keyword != joinedKeyword):
-	 			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
-	 			# the following line is a workaround needed to fix issues with missing ' ' separation after 
-	 			# keyword replacement
-	 			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
-		newAbstractList.append(abstract)
-	print "Finished joining multi-word terms after", time.time() - start, "seconds!"
+	#newAbstractList = []
+	#for abstract in abstractList:
+	#	for keyword in sortedList:
+	#		tokenlist = keyword.split()
+	#		joinedKeyword = '_'.join(tokenlist)
+	#		print keyword + " -> " + joinedKeyword
+	#		if (keyword != joinedKeyword):
+	# 			abstract = re.sub(keyword, joinedKeyword, abstract.strip())
+	# 			# the following line is a workaround needed to fix issues with missing ' ' separation after 
+	# 			# keyword replacement
+	# 			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
+	#	newAbstractList.append(abstract)
+	#print "Finished joining multi-word terms after", time.time() - start, "seconds!"
 
 	#TODO: find a faster method to do this
 	# Prepare finished joined keyword list. Should be faster than
 	# joining all keywords for each abstract (remains to be seen).
 	
-	#joinedKeywordMap = {}
-	#for keyword in sortedList:
-	#		tokenlist = keyword.split()
-	#		joinedKeyword = '_'.join(tokenlist)
-	#		joinedKeywordMap[keyword] = joinedKeyword
+	joinedKeywordMap = {}
+	for keyword in sortedList:
+			tokenlist = keyword.split()
+			joinedKeyword = '_'.join(tokenlist)
+			joinedKeywordMap[keyword] = joinedKeyword
 			
 	#start replacment process with longest multi-word terms 
 	# To test
-	#newAbstractList = ['' for x in range(len(abstractList))]
-	#i = 0
-	#for abstract in abstractList:
-	#	strippedAbstract = abstract.strip()
-	#	for keyword in sortedList:
-	#		joinedKeyword = joinedKeywordMap[keyword]
-	#		if (keyword != joinedKeyword):
-	# 			abstract = re.sub(keyword, joinedKeyword, strippedAbstract)
-	# 			# the following line is a workaround needed to fix issues with missing ' ' separation after 
-	# 			# keyword replacement
-	# 			abstract = re.sub('(?<=[a-z])visual', ' visual', abstract) #lookbehind for visualization_***
-	#	#newAbstractList.append(abstract)
-	#	newAbstractList[i] = abstract
-	#	i = i + 1
-	#print "Finished joining multi-word terms after", time.time() - start, "seconds!"
+	newAbstractList = ['' for x in range(len(abstractList))]
+	i = 0
+	repl = 0
+	for abstract in abstractList:
+		strippedAbstract = abstract.strip()
+		for keyword in sortedList:
+			joinedKeyword = joinedKeywordMap[keyword]
+			if (keyword != joinedKeyword):
+				#print keyword + " -> " + joinedKeyword
+	 			strippedAbstract = re.sub(keyword, joinedKeyword, strippedAbstract)
+	 			repl = repl + 1
+	 			# the following line is a workaround needed to fix issues with missing ' ' separation after 
+	 			# keyword replacement
+	 			strippedAbstract = re.sub('(?<=[a-z])visual', ' visual', strippedAbstract) #lookbehind for visualization_***
+		newAbstractList.append(strippedAbstract)
+		newAbstractList[i] = strippedAbstract
+		#print abstract
+		i = i + 1
+	print "Finished joining multi-word terms after", time.time() - start, "seconds!"
+	print "Replaced = " + str(repl)
+	
+	# Why so few _ terms?
 	
 	"""(4) Write to file"""		
 	print "Writing to file ..."
 	
 	with open(os.path.join(__location__, 'KeyVisCorpora', 'abstracts.txt'), 'w') as file:
-		for abstract in abstractList:
+		for abstract in newAbstractList:
 			output = abstract + '\n'
 			file.write(output)
 	print "Pre-processing done!"
