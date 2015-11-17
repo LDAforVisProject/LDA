@@ -56,8 +56,8 @@ logger.info(configuration.outputPath)
 logger.info(configuration.outputPath)
 logger.info(configuration.dbPath)
 
-#configuration.mode          = "importKeywords"
-#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_newKW.db"
+configuration.mode          = "importKeywords"
+configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_new2.db"
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
