@@ -41,9 +41,8 @@ csv.field_size_limit(sys.maxsize)
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 # Set up logger
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
-#logging.disable(logging.critical)
 
 # Parse arguments
 configuration = SimplifiedConfiguration()
