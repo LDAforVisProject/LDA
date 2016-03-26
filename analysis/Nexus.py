@@ -10,24 +10,25 @@ import logging
 import hashlib
 
 # Add paths to libraries (needed for pyinstall.py to work properly).
-python_path      = "D:\Programme\Python27\\"
-dependency_path  = "D:\Workspace\Eclipse\VKA_TopicMining\\"
+#python_path      = "D:\Programme\Python27\\"
+#dependency_path  = "D:\Workspace\Eclipse\VKA_TopicMining\\"
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(python_path + "DLLs")
-sys.path.append(python_path + "Lib")
-sys.path.append(python_path + "Lib\multiprocessing")
-sys.path.append(python_path + "Lib\site-packages")
-sys.path.append(python_path + "Lib\site-packages\gensim-0.10.0-py2.7.egg")
-sys.path.append(python_path + "Lib\site-packages\six-1.7.3-py2.7.egg")
-sys.path.append(dependency_path + "pattern-2.6")
-sys.path.append(dependency_path + "python-unicodecsv-0.9.4")
+#sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+#sys.path.append(python_path + "DLLs")
+#sys.path.append(python_path + "Lib")
+#sys.path.append(python_path + "Lib\multiprocessing")
+#sys.path.append(python_path + "Lib\site-packages")
+#sys.path.append(python_path + "Lib\site-packages\gensim-0.10.0-py2.7.egg")
+#sys.path.append(python_path + "Lib\site-packages\six-1.7.3-py2.7.egg")
+#sys.path.append(dependency_path + "pattern-2.6")
+#sys.path.append(dependency_path + "python-unicodecsv-0.9.4")
 
 #from utils import Utils
 from utils import SimplifiedConfiguration
 from core import ParametrizedLDA
 from core import CorporaReader
 from core import TextProcessor
+from core import AbstractMTKJoiner
 from gensim import corpora
 import sqlite3
 
@@ -52,7 +53,6 @@ logger.info(configuration.mode)
 logger.info(configuration.passes)
 logger.info(configuration.update_every)
 logger.info(configuration.inputPath)
-logger.info(configuration.outputPath)
 logger.info(configuration.outputPath)
 logger.info(configuration.dbPath)
 
@@ -90,6 +90,11 @@ elif configuration.mode == "pre":
     logger.info("Preprocessing data.\n")
     CorporaReader.readCorpora()
     TextProcessor.processText()
+    
+# Postprocess result of TagRefinery. Dev. function, not intended to be used in production.
+elif configuration.mode == "pre_tagRefineryPostprocessing":
+    logger.info("Preprocessing: Postprocessing TagRefinery data.")
+    AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data - Copy\\tagRefineryData.csv")
     
 elif configuration.mode == "importKeywords":
     logger.info("Importing keywords.\n")

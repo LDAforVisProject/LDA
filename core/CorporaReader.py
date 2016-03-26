@@ -139,8 +139,7 @@ def readCorpora():
 		i = i + 1
 	print "Finished joining multi-word terms after", time.time() - start, "seconds!"
 	print "Replaced = " + str(repl)
-	
-	# Why so few _ terms?
+
 	
 	"""(4) Write to file"""		
 	print "Writing to file ..."

@@ -13,7 +13,7 @@ import logging
 '''
 Write topics to CSV
 '''
-def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical'):
+def writeTopics(dbConn, lda, configuration, numberOfTerms):
     
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
     
     # Get ldaConfigID.
     for res in dbConn.execute(  "select ldaConfigurationID from ldaConfigurations " + 
-                                "where alpha = ? and kappa = ? and eta = ?", ldaValues):
+                               "where alpha = ? and kappa = ? and eta = ?", ldaValues):
         ldaConfigID = res[0]
     
 
@@ -71,13 +71,14 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
     i = 0
     # Write keyword in topic data into db.
     for topic in topics:
+        keywordRank = 0
         for p, word in topic:
             # Get ID for this keyword.
             if word in keywordIDs:
-                keywordInTopicData.append((i, keywordIDs[word], p, ldaConfigID))
+                keywordInTopicData.append((i, keywordIDs[word], p, ldaConfigID, keywordRank))
             else:
                 errorCount = errorCount + 1 #logger.info("ERROR / keyword not found (probably has ' or \" in it).")
-        
+            keywordRank = keywordRank + 1
         # Increment topic counter.
         i = i + 1
         
@@ -97,41 +98,8 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms, alignment='vertical')
     # Output LDA configuration.
     logger.critical(configuration.toString())
     
+    # Close connection to database.
     dbConn.close()
-
-def writeTopicsToCSVFiles(outputfile, lda, configuration, numberOfTerms, alignment='vertical'):
-
-    # Output to file:
-    with open(outputfile, 'wb') as output:
-        wunicode = unicodecsv.writer(output, encoding='utf-8')
-        
-        i = 0
-        errorIndex = 0
-        
-        # Write configuration string to file.
-        configStrings = []
-        configStrings.append(configuration.toString())
-        wunicode.writerow(configStrings);
-        
-        for topic in lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms):
-                
-            elementList = []
-            i = i + 1
-            
-            for p, word in topic:
-                elementList.append(word + '|' + str(p))
-            
-            # Write line to file.
-            try:
-                #w.writerow(qAlternative)
-                #csv_writer.writerow(q)
-                wunicode.writerow(elementList)
-                
-            except UnicodeEncodeError as e:
-                errorIndex = errorIndex + 1
-                print "LDA::writeTopics(): String seems not to be ASCII-encoded. See issue #5. Error #" + str(errorIndex)
-                print e
-
 
 
 '''
@@ -154,18 +122,8 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
     lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
                                    passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
     
-    if writeToFile == True:
-        nOfTerms = len(dictionary)
-        #print ""
-        #Visualize Topics
-        #visualizeTopics(lda, k, nOfTerms)
-        #Save topics to csv
-        if pathMode == "relative":
-            fileLocation = os.path.join(__location__, location)
-        elif pathMode == "absolute":
-            fileLocation = location
-    
+    if writeToFile == True:    
         # Use horizontal topic/keyword alignment as default value.
-        writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, nOfTerms, 'horizontal')
+        writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, len(dictionary))
     
     return lda
