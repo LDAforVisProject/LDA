@@ -41,7 +41,7 @@ csv.field_size_limit(sys.maxsize)
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 # Set up logger
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.CRITICAL)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 #logging.disable(logging.critical)
 
@@ -56,8 +56,9 @@ logger.info(configuration.inputPath)
 logger.info(configuration.outputPath)
 logger.info(configuration.dbPath)
 
+# Prepare settings for import of keywords.
 #configuration.mode          = "importKeywords"
-#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_new2.db"
+#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data - Copy\\vkpsa.db"
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
@@ -92,9 +93,11 @@ elif configuration.mode == "pre":
     TextProcessor.processText()
     
 # Postprocess result of TagRefinery. Dev. function, not intended to be used in production.
+# Uses existing abstracts.txt file.
 elif configuration.mode == "pre_tagRefineryPostprocessing":
     logger.info("Preprocessing: Postprocessing TagRefinery data.")
-    AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data - Copy\\tagRefineryData.csv")
+    #AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data - Copy\\tagRefineryData.csv")
+    TextProcessor.processText()
     
 elif configuration.mode == "importKeywords":
     logger.info("Importing keywords.\n")
