@@ -1,4 +1,4 @@
-''' Keyvis Copora Reader
+''' AbstractMTKJoiner
 
 @file:        AbstractMTKJoiner.py
 @author:      Raphael Mitsch
@@ -14,8 +14,8 @@ import time
 #from utils.unicodeHandling.UnicodeCSVHandler import *
 
 # Dev. function, not intended to be used in production.
-# @param abstractsPath Path to existing abstracts file. 
-def processTagRefineryData(abstractsPath):
+# @param abstractsPath Path to existing abstracts summary file. 
+def processTagRefineryData(abstractsSummaryPath):
     # Filepath variable
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     
@@ -26,7 +26,7 @@ def processTagRefineryData(abstractsPath):
     # 1. Load abstracts in list.
     #
     
-    with open(os.path.join(__location__, abstractsPath),'rU') as input:    
+    with open(os.path.join(__location__, abstractsSummaryPath),'rU') as input:    
         cr = csv.reader(input)
         for line in cr:
             abstractList.append(line[0])

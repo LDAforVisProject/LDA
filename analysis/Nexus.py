@@ -10,18 +10,18 @@ import logging
 import hashlib
 
 # Add paths to libraries (needed for pyinstall.py to work properly).
-#python_path      = "D:\Programme\Python27\\"
-#dependency_path  = "D:\Workspace\Eclipse\VKA_TopicMining\\"
+python_path      = "D:\Programme\Python27\\"
+dependency_path  = "D:\Workspace\Eclipse\VKA_TopicMining\\"
 
-#sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-#sys.path.append(python_path + "DLLs")
-#sys.path.append(python_path + "Lib")
-#sys.path.append(python_path + "Lib\multiprocessing")
-#sys.path.append(python_path + "Lib\site-packages")
-#sys.path.append(python_path + "Lib\site-packages\gensim-0.10.0-py2.7.egg")
-#sys.path.append(python_path + "Lib\site-packages\six-1.7.3-py2.7.egg")
-#sys.path.append(dependency_path + "pattern-2.6")
-#sys.path.append(dependency_path + "python-unicodecsv-0.9.4")
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(python_path + "DLLs")
+sys.path.append(python_path + "Lib")
+sys.path.append(python_path + "Lib\multiprocessing")
+sys.path.append(python_path + "Lib\site-packages")
+sys.path.append(python_path + "Lib\site-packages\gensim-0.10.0-py2.7.egg")
+sys.path.append(python_path + "Lib\site-packages\six-1.7.3-py2.7.egg")
+sys.path.append(dependency_path + "pattern-2.6")
+sys.path.append(dependency_path + "python-unicodecsv-0.9.4")
 
 #from utils import Utils
 from utils import SimplifiedConfiguration
@@ -29,6 +29,7 @@ from core import ParametrizedLDA
 from core import CorporaReader
 from core import TextProcessor
 from core import AbstractMTKJoiner
+from core import DocumentImporter
 from gensim import corpora
 import sqlite3
 
@@ -57,7 +58,10 @@ logger.info(configuration.dbPath)
 
 # Prepare settings for import of keywords.
 #configuration.mode          = "importKeywords"
-#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data - Copy\\vkpsa.db"
+#configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_TEMPLATE.db"
+
+configuration.mode = 'prexyz'
+DocumentImporter.importAbstractsInDB()
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
@@ -95,7 +99,7 @@ elif configuration.mode == "pre":
 # Uses existing abstracts.txt file.
 elif configuration.mode == "pre_tagRefineryPostprocessing":
     logger.info("Preprocessing: Postprocessing TagRefinery data.")
-    #AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data - Copy\\tagRefineryData.csv")
+    AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data\\auxiliaryData\\tagRefineryData.csv")
     TextProcessor.processText()
     
 elif configuration.mode == "importKeywords":

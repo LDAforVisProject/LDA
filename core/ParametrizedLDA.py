@@ -29,13 +29,14 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
      
     try:
         # Write LDA configuration to file.
-        ldaValues = []
+        ldaValues           = []
         
         ldaValues.append(configuration.alpha)
         ldaValues.append(configuration.k)
         ldaValues.append(configuration.eta)
+        ldaValues.append(0)
 
-        dbConn.execute("insert into ldaConfigurations (alpha, kappa, eta) VALUES (?, ?, ?)", ldaValues)
+        dbConn.execute("insert into ldaConfigurations (alpha, kappa, eta, generation_time) VALUES (?, ?, ?, ?)", ldaValues)
         # Commit query. 
         dbConn.commit()
         
@@ -44,7 +45,7 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
     
     # Get ldaConfigID.
     for res in dbConn.execute(  "select ldaConfigurationID from ldaConfigurations " + 
-                               "where alpha = ? and kappa = ? and eta = ?", ldaValues):
+                               "where alpha = ? and kappa = ? and eta = ?", ldaValues[:3]):
         ldaConfigID = res[0]
     
 
@@ -85,7 +86,7 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
         # Write batch of topic -> keyword/probability data to database.
         #'''
         try:
-            dbConn.executemany('insert into keywordInTopic VALUES (?, ?, ?, ?)', keywordInTopicData)
+            dbConn.executemany('insert into keywordInTopic VALUES (?, ?, ?, ?, ?)', keywordInTopicData)
             # Clear topic data array.
             #logger.critical("in writetopics - kit batch: " + str(i) + ", .len = " + str(len(keywordInTopicData)))
             keywordInTopicData = []
@@ -118,12 +119,20 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
     # Load Corpus iterator
     mm          = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
     
+    
     # Train LDA model
     lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
                                    passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
     
-    if writeToFile == True:    
+    print 'Printing corpus'
+    blub = 0
+    for doc in lda[mm]: 
+        blub = blub + 1
+    print 'count = ' + str(blub)
+    
+    
+    #if writeToFile == True:    
         # Use horizontal topic/keyword alignment as default value.
-        writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, len(dictionary))
+        #writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, len(dictionary))
     
     return lda

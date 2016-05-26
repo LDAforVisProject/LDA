@@ -107,7 +107,6 @@ def readCorpora():
 	#	newAbstractList.append(abstract)
 	#print "Finished joining multi-word terms after", time.time() - start, "seconds!"
 
-	#TODO: find a faster method to do this
 	# Prepare finished joined keyword list. Should be faster than
 	# joining all keywords for each abstract (remains to be seen).
 	
@@ -134,7 +133,12 @@ def readCorpora():
 	 			# keyword replacement
 	 			strippedAbstract = re.sub('(?<=[a-z])visual', ' visual', strippedAbstract) #lookbehind for visualization_***
 		newAbstractList.append(strippedAbstract)
-		newAbstractList[i] = strippedAbstract
+		
+		'''
+			@todo: Check if line below is necessary (in addition to .append). 
+		'''
+		#newAbstractList[i] = strippedAbstract
+		
 		#print abstract
 		i = i + 1
 	print "Finished joining multi-word terms after", time.time() - start, "seconds!"
