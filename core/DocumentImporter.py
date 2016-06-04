@@ -18,15 +18,14 @@ def importAbstractsInDB():
     abstractList = []
     keywordsList = []
     
+    # Define target location.
     __location__    = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     corporaFolder   = os.path.join(__location__, 'KeyVisCorpora')
 
     # Use document ID for later references.
     documentID      = 0
     
-    #target = open(os.path.join(corporaFolder, 'test.txt'), 'w')
-    
-    
+    # Iterate through all documents.
     for publication in os.listdir(corporaFolder):
         if publication.endswith('.csv'): #only read csv-files!
             with open(os.path.join(corporaFolder, publication), 'rU') as csvfile:
@@ -50,17 +49,23 @@ def importAbstractsInDB():
     print "Finished reading  %i abstracts!" % len(abstractList)
     print "Finished reading  %i keyword sets!" % len(keywordsList)
     
-    CONTINUE HERE
     '''
-        Current status: Order of papers in refined abstract list is the same as used in CorporaReader and, presumably in the used market matrix.
+        Current status: Order of papers in refined abstract list is the same as used in CorporaReader and, presumably, in used market matrix.
                         Consequently the n-th entry in gensim's topic-to-document transformation may be used to refer to the n-th abstract in the abstracts list.
-                        Therefore a document ID as well as topic-document relevance column have to be introduced into the DB.
+                        Note: Pay attention to number of abstracts (2019 vs. multiples?).
                         
         Next steps:     
-                        * Define and create document table in DB.
-                        * Continue DocumentImporter.py; import all documents in the DB.
-                        * Create topic_in_document table; store relevant values when generating topic models.
+                        x Define and create document table in DB.
+                        * Execute tag refinery postprocessing again.
+                        * Continue work on DocumentImporter.py; import all documents in the DB.
+                            - Refined text used for topic modelling (tagRefineryData.csv)
+                            - Original text (as in original, primitive abstract list)
+                        * topics_in_documents:
+                            x Create topic_in_document table; 
+                            - store relevant values when generating topic models.
                         * After that (testing!): Continue with GUI.
+                            - Create component structure
+                            - Add interactivitiy
     '''
     
     #target.close()
