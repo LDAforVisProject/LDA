@@ -120,11 +120,14 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
     mm          = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
     
     
-    # Train LDA model
+    # Train LDA model.
     lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
                                    passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
     
-    print 'Printing corpus'
+    
+    '''
+    @todo Remove loop.
+    '''
     blub = 0
     for doc in lda[mm]: 
         blub = blub + 1

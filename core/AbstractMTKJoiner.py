@@ -86,9 +86,9 @@ def processTagRefineryData(abstractsSummaryPath):
                 # the following line is a workaround needed to fix issues with missing ' ' separation after 
                 # keyword replacement
                 strippedAbstract = re.sub('(?<=[a-z])visual', ' visual', strippedAbstract) #lookbehind for visualization_***
-        newAbstractList.append(strippedAbstract)
+        #newAbstractList.append(strippedAbstract)
         newAbstractList[i] = strippedAbstract
-        #print abstract
+        
         i = i + 1
     print "Finished joining multi-word terms after", time.time() - start, "seconds!"
     print "Replaced = " + str(repl)

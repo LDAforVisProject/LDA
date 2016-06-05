@@ -48,7 +48,9 @@ logger = logging.getLogger(__name__)
 # Parse arguments
 configuration = SimplifiedConfiguration()
 configuration.parseOptions()
-
+# Add argument for path to list of abstracts improved with TagRefinery and re-merged with list of supported keywords..
+configuration.refinedAbstractsSummaryPath = "D:\\Workspace\\LDA\\core\\KeyVisCorpora\\abstracts.txt"
+ 
 logger.info(configuration.mode)
 logger.info(configuration.passes)
 logger.info(configuration.update_every)
@@ -60,8 +62,7 @@ logger.info(configuration.dbPath)
 #configuration.mode          = "importKeywords"
 #configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_TEMPLATE.db"
 
-configuration.mode = 'prexyz'
-DocumentImporter.importAbstractsInDB()
+configuration.mode = 'pre_tagRefineryPostprocessing'
 
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
@@ -102,6 +103,13 @@ elif configuration.mode == "pre_tagRefineryPostprocessing":
     AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data\\auxiliaryData\\tagRefineryData.csv")
     TextProcessor.processText()
     
+elif configuration.mode == "importDocuments":
+    logger.info("Importing documents.\n")
+
+    # Importing documents in DB.    
+    DocumentImporter.importAbstractsInDB(configuration)
+
+
 elif configuration.mode == "importKeywords":
     logger.info("Importing keywords.\n")
     
