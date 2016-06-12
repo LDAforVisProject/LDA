@@ -11,9 +11,14 @@ import sqlite3
 import logging   
         
 '''
-Write topics to CSV
+Store result data in DB.
+@param dbConn Connection to database.
+@param lda LDA data set.
+@param corpusMM Market matrix containing topic-document data of corpus.
+@param configuration Set of meta data (target location etc.).
+@param numberOfTerms Number of keywords to be considered.
 '''
-def writeTopics(dbConn, lda, configuration, numberOfTerms):
+def saveResults(dbConn, lda, corpusMM, configuration, numberOfTerms):
     
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -21,16 +26,20 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
     errorCount  = 0
     ldaConfigID = -1
     
-    # Get keyword IDs.
+    #
+    # 1. Get keyword IDs.
+    #
     keywordIDs  = dict()
     request     = "select * from keywords";
     for res in dbConn.execute(request):
         keywordIDs[res[1]] = int(res[0])
-     
+    
+    #
+    # 2. Insert new LDA configurations.
+    # 
     try:
         # Write LDA configuration to file.
         ldaValues           = []
-        
         ldaValues.append(configuration.alpha)
         ldaValues.append(configuration.k)
         ldaValues.append(configuration.eta)
@@ -43,11 +52,15 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
     except:
         errorCount = errorCount + 1 #logger.info("ERROR")
     
-    # Get ldaConfigID.
+    # Get IDs of newly inserted LDA cofigurations.
     for res in dbConn.execute(  "select ldaConfigurationID from ldaConfigurations " + 
                                "where alpha = ? and kappa = ? and eta = ?", ldaValues[:3]):
         ldaConfigID = res[0]
     
+
+    #
+    # 3. Insert new topics.
+    #
 
     # Store topic values.
     topicData           = []
@@ -68,7 +81,11 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
         dbConn.executemany("insert into topics (topicID, ldaConfigurationID) VALUES (?, ?)", topicData)
     except IOError as error:
         print error
-        
+
+    #
+    # 4. Insert new keyword-in-topic data.
+    #
+            
     i = 0
     # Write keyword in topic data into db.
     for topic in topics:
@@ -96,6 +113,35 @@ def writeTopics(dbConn, lda, configuration, numberOfTerms):
     # Commit changes.
     dbConn.commit()
     
+    #
+    # 5. Insert new topic-in-document data.
+    #
+    
+    # Get topic IDs for this LDA configuration.
+    topicIDs = []
+    for res in dbConn.execute(  "select topicID from topics " + 
+                                "where ldaConfigurationID = ?", (ldaConfigID,)):
+        topicIDs.append(res[0])
+        
+    # Gather topic probabilities in documents, store them in the DB.
+    topicInDocProbabilities = []
+    # Document number/ID (sequence of documents in corpusMM is equivalent with sequence of IDs in database).
+    documentID              = 0
+    # Iterate through all topic-document edges.
+    for topicInDocsDatum in lda[corpusMM]:
+        # Deconstruct in individual topic -> document relations.
+        for topicInDocDatum in topicInDocsDatum:
+            # Add datum to list.
+            topicInDocProbabilities.append((documentID, topicIDs[topicInDocDatum[0]], ldaConfigID, topicInDocDatum[1]))
+             
+        # Keep track of number of processed documents.
+        documentID += 1
+    # Insert topic-in-document probabilities in DB.
+    dbConn.executemany('insert into topics_in_documents values (?, ?, ?, ?)', topicInDocProbabilities)
+    
+    # Commit changes.
+    dbConn.commit()
+    
     # Output LDA configuration.
     logger.critical(configuration.toString())
     
@@ -117,25 +163,30 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
     # Load id2word Dictionary
     dictionary  = corpora.Dictionary.load(os.path.join(__location__, 'data/KeyVis.dict'))
     # Load Corpus iterator
-    mm          = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
+    corpusMM    = corpora.MmCorpus(os.path.join(__location__, 'data/KeyVis_tfidf.mm'))
     
     
     # Train LDA model.
-    lda = models.ldamodel.LdaModel(corpus=mm, id2word=dictionary, num_topics=configuration.k, update_every=configuration.update_every, 
-                                   passes=configuration.passes, alpha=configuration.alpha, eta=configuration.eta)
+    lda = models.ldamodel.LdaModel(corpus       = corpusMM,
+                                   id2word      = dictionary,
+                                   num_topics   = configuration.k, 
+                                   update_every = configuration.update_every, 
+                                   passes       = configuration.passes, 
+                                   alpha        = configuration.alpha, 
+                                   eta          = configuration.eta)
     
     
     '''
     @todo Remove loop.
-    '''
+    
     blub = 0
-    for doc in lda[mm]: 
+    for doc in lda[corpusMM]: 
         blub = blub + 1
+        print doc[0]
     print 'count = ' + str(blub)
-    
-    
-    #if writeToFile == True:    
-        # Use horizontal topic/keyword alignment as default value.
-        #writeTopics(sqlite3.connect(configuration.dbPath), lda, configuration, len(dictionary))
+    '''
+   
+    # Store results in database.
+    saveResults(sqlite3.connect(configuration.dbPath), lda, corpusMM, configuration, len(dictionary))
     
     return lda

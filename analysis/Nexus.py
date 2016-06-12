@@ -62,8 +62,6 @@ logger.info(configuration.dbPath)
 #configuration.mode          = "importKeywords"
 #configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_TEMPLATE.db"
 
-configuration.mode = 'pre_tagRefineryPostprocessing'
-
 # Determine mode, start corresponding tasks.
 if configuration.mode == "sample":
     logger.info("Sampling values as listed in " + configuration.inputPath + ".\n")
@@ -119,12 +117,15 @@ elif configuration.mode == "importKeywords":
     dictionary      = corpora.Dictionary.load(os.path.join(__location__ + "\\..\\core\\", 'data/KeyVis.dict'))
     # Initialize container for new keywords.
     wordsToInsert   = []
-    
+       
     # Loop through all words in dictionary.
     for id, word in dictionary.items():
-        #print word
-        wordsToInsert.append( (word,) )   
-    # Commit changes to DB.
+        # Append word to collection.
+        wordsToInsert.append( (word,) )
+    
+    # Execute inserts.
     dbConn.executemany("insert into keywords (keyword) VALUES (?)", wordsToInsert)
     # Commit query. 
     dbConn.commit()
+    # Close DB connection.
+    dbConn.close()
