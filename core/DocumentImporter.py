@@ -95,7 +95,7 @@ def importAbstractsInDB(configuration):
                                     
                                 # Add conference information.
                                 if (len(authors) > 0): 
-                                    authorsDict[elementID]      = str(conference)
+                                    authorsDict[elementID]      = str(authors)
                                         
                                 # Keep track of processed elements.
                                 elementID   += 1
