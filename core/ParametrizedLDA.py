@@ -120,7 +120,8 @@ def saveResults(dbConn, lda, corpusMM, configuration, numberOfTerms):
     # Get topic IDs for this LDA configuration.
     topicIDs = []
     for res in dbConn.execute(  "select topicID from topics " + 
-                                "where ldaConfigurationID = ?", (ldaConfigID,)):
+                                "where ldaConfigurationID = ? " +
+                                "order by topicID asc", (ldaConfigID,)):
         topicIDs.append(res[0])
         
     # Gather topic probabilities in documents, store them in the DB.
