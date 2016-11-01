@@ -12,6 +12,7 @@ import time
 import sqlite3
 import logging
 #from utils.unicodeHandling.UnicodeCSVHandler import *
+from Crypto.PublicKey import pubkey
 
 '''
     Imports documents (original and refined version) in specified database.
@@ -19,16 +20,18 @@ import logging
     @param configuration Configuration object, holding e.g. the path to the used database file.   
 '''
 def importAbstractsInDB(configuration):
-    
+
     # Define collection of data to import into DB.
     abstractDict        = {}
     keywordsDict        = {}
     conferenceDict      = {}
     dateDict            = {}
     titleDict           = {}
+    doiDict             = {}
+    publinkDict         = {}
     authorsDict         = {}
     refinedAbstractDict = {}
-    
+
     # Get logger.
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -42,6 +45,7 @@ def importAbstractsInDB(configuration):
             1. Connect to database.
         '''
         dbConn              = sqlite3.connect(configuration.dbPath)
+
         # Change DB connection's text factory.
         dbConn.text_factory = str
         
@@ -55,9 +59,13 @@ def importAbstractsInDB(configuration):
         '''
             2. If connected to database: Read documents (both original and refined).
         '''
-        
+
+        # Get list of files in directory.
+        publications = os.listdir(corporaFolder)
+        publications.sort()
+
         # Read original paper data.
-        for publication in os.listdir(corporaFolder):
+        for publication in publications:
             if publication.endswith('.csv'): #only read csv-files!
                 with open(os.path.join(corporaFolder, publication), 'rU') as csvfile:
                     #csvHandler = UnicodeCSVHandler()
@@ -71,39 +79,50 @@ def importAbstractsInDB(configuration):
                             conference  = document[1]
                             date        = document[2]
                             title       = document[3]
+                            doi         = document[4]
+                            publink     = document[5]
                             authors     = document[14]
-                            
+
                             # Use only papers with existing abstracts, ignore non-content lines.
-                            if (abstract != "Abstract" and len(abstract) > 0): 
+                            if abstract != "Abstract" and len(abstract) > 0:
                                 abstractDict[elementID]         = str(abstract)
                                 
                                 # Add author information.
-                                if (keywords != "Author Keywords" and len(keywords) > 0): 
+                                if keywords != "Author Keywords" and len(keywords) > 0:
                                     keywordsDict[elementID]     = str(keywords)
                                 
                                 # Add conference information.
-                                if (len(conference) > 0): 
+                                if len(conference) > 0:
                                     conferenceDict[elementID]   = str(conference)
                                     
                                 # Add date information.
-                                if (len(date) > 0): 
+                                if len(date) > 0:
                                     dateDict[elementID]         = str(date)
                                     
-                                # Add conference information.
-                                if (len(title) > 0): 
+                                # Add title information.
+                                if len(title) > 0:
                                     titleDict[elementID]        = str(title)
+
+                                # Add DOI information.
+                                if len(doi) > 0:
+                                    doiDict[elementID]          = str(doi)
+
+                                # Add publication link information.
+                                if len(publink) > 0:
+                                    publinkDict[elementID]      = str(publink)
                                     
-                                # Add conference information.
-                                if (len(authors) > 0): 
+                                # Add author information.
+                                if len(authors) > 0:
                                     authorsDict[elementID]      = str(authors)
-                                        
+
                                 # Keep track of processed elements.
-                                elementID   += 1
+                                elementID += 1
                             
         # Read refined paper data.
         # Reset element ID.
         count       = elementID
         elementID   = 0
+
         with open(os.path.join(__location__, configuration.refinedAbstractsSummaryPath),'rU') as input:    
             cr = csv.reader(input)
             
@@ -123,18 +142,20 @@ def importAbstractsInDB(configuration):
         for i in range(0, elementID):
             abstract        = abstractDict[i]
             refinedAbstract = refinedAbstractDict[i]
-            keywords        = keywordsDict[i]   if i in keywordsDict else ""
-            conference      = conferenceDict[i] if i in conferenceDict else ""
-            date            = dateDict[i]       if i in dateDict else ""
-            title           = titleDict[i]      if i in titleDict else ""
-            authors         = authorsDict[i]    if i in authorsDict else ""
+            keywords        = keywordsDict[i]       if i in keywordsDict else ""
+            conference      = conferenceDict[i]     if i in conferenceDict else ""
+            date            = dateDict[i]           if i in dateDict else ""
+            title           = titleDict[i]          if i in titleDict else ""
+            doi             = doiDict[i]            if i in doiDict else ""
+            publink         = publinkDict[i]        if i in publinkDict else ""
+            authors         = authorsDict[i]        if i in authorsDict else ""
             
             # Append tupel to document data collection.
-            documentData.append((i, abstract, refinedAbstract, keywords, conference, date, title, authors))
+            documentData.append((i, abstract, refinedAbstract, keywords, conference, date, title, doi, publink,  authors))
         
         # Insert collected data.
-        dbConn.executemany("insert into documents (id, abstract, refinedAbstract, keywords, conference, date, title, authors) " + 
-                           "    VALUES (?, ?, ?, ?, ?, ?, ?, ?)", documentData)
+        dbConn.executemany("insert into documents (id, abstract, refinedAbstract, keywords, conference, date, title, doi, publication_link, authors) " +
+                           "    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", documentData)
         
         # Commit transaction.
         dbConn.commit()

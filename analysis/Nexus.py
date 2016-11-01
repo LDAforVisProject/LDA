@@ -49,7 +49,8 @@ logger = logging.getLogger(__name__)
 configuration = SimplifiedConfiguration()
 configuration.parseOptions()
 # Add argument for path to list of abstracts improved with TagRefinery and re-merged with list of supported keywords..
-configuration.refinedAbstractsSummaryPath = "D:\\Workspace\\LDA\\core\\KeyVisCorpora\\abstracts.txt"
+configuration.refinedAbstractsSummaryPath = "/home/raphael/Development/LDA/src/core/KeyVisCorpora/abstracts.txt"
+#configuration.refinedAbstractsSummaryPath = "D:\\Workspace\\LDA\\core\\KeyVisCorpora\\abstracts.txt"
  
 logger.info(configuration.mode)
 logger.info(configuration.passes)
@@ -59,6 +60,7 @@ logger.info(configuration.outputPath)
 logger.info(configuration.dbPath)
 
 # Prepare settings for import of keywords.
+configuration.mode          = "importDocuments"
 #configuration.mode          = "importKeywords"
 #configuration.dbPath        = "D:\\Workspace\\Scientific Computing\\VKPSA_data\\vkpsa_TEMPLATE.db"
 
@@ -92,13 +94,14 @@ if configuration.mode == "sample":
 elif configuration.mode == "pre":
     logger.info("Preprocessing data.\n")
     CorporaReader.readCorpora()
-    TextProcessor.processText()
+    #TextProcessor.processText()
     
 # Postprocess result of TagRefinery. Dev. function, not intended to be used in production.
 # Uses existing abstracts.txt file.
 elif configuration.mode == "pre_tagRefineryPostprocessing":
     logger.info("Preprocessing: Postprocessing TagRefinery data.")
     AbstractMTKJoiner.processTagRefineryData("D:\\Workspace\Scientific Computing\\VKPSA_data\\auxiliaryData\\tagRefineryData.csv")
+    # Update .dict file.
     TextProcessor.processText()
     
 elif configuration.mode == "importDocuments":

@@ -6,7 +6,8 @@ Created on 30.05.2015
 
 from optparse import OptionParser
 
-class SimplifiedConfiguration():
+
+class SimplifiedConfiguration:
     '''
     Class for argument parsing and storing configuration data.
     '''

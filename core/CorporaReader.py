@@ -118,7 +118,7 @@ def readCorpora():
 			
 	#start replacment process with longest multi-word terms 
 	# To test
-	newAbstractList = ['' for x in range(len(abstractList))]
+	newAbstractList = [] # ['' for x in range(len(abstractList))]
 	i = 0
 	repl = 0
 	for abstract in abstractList:

@@ -68,7 +68,7 @@ def saveResults(dbConn, lda, corpusMM, configuration, numberOfTerms):
     keywordInTopicData  = []
          
     # Get topics.
-    topics = lda.show_topics(topics=configuration.k, formatted=False, topn=numberOfTerms)     
+    topics = lda.show_topics(num_topics=configuration.k, formatted=False, num_words=numberOfTerms)
     
     i = 0
     # Pack topics into list.
@@ -90,7 +90,8 @@ def saveResults(dbConn, lda, corpusMM, configuration, numberOfTerms):
     # Write keyword in topic data into db.
     for topic in topics:
         keywordRank = 0
-        for p, word in topic:
+
+        for p, word in topic[1]:
             # Get ID for this keyword.
             if word in keywordIDs:
                 keywordInTopicData.append((i, keywordIDs[word], p, ldaConfigID, keywordRank))
@@ -188,6 +189,7 @@ def executeLDA(configuration, location, pathMode, writeToFile = False):
     '''
    
     # Store results in database.
+    print configuration.dbPath
     saveResults(sqlite3.connect(configuration.dbPath), lda, corpusMM, configuration, len(dictionary))
     
     return lda
